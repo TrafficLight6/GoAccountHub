@@ -7,7 +7,6 @@ import (
 
 type Config struct {
 	Port             string `json:"port"`
-	DatabaseType     string `json:"database_type"`
 	DatabaseName     string `json:"database_name"`
 	DatabaseHost     string `json:"database_host"`
 	DatabasePort     string `json:"database_port"`

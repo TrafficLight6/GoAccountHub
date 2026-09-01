@@ -1,7 +1,6 @@
 {
     "port": "8080",
     
-    "database_type": "",
     "database_name": "",
     "database_host": "",
     "database_port": "",
