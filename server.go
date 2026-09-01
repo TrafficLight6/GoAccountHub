@@ -6,11 +6,11 @@ import (
 )
 
 func StartServer(configPath string) config.Config {
-	router := router.ReturnRouter()
 	AppConfig := config.GetConfig(configPath)
 	if AppConfig.Port == "" {
 		return config.Config{}
 	}
+	router := router.ReturnRouter(AppConfig)
 	router.Run(":" + AppConfig.Port)
 	return AppConfig
 }
