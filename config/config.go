@@ -13,7 +13,7 @@ type Config struct {
 	DatabaseUser     string `json:"database_user"`
 	DatabasePassword string `json:"database_password"`
 
-	RootAdminPassword string `json:"root_admin_password"`
+	RootAdminPasswordHash string `json:"root_admin_password_hash"`
 
 	AllowMultiCharacter bool `json:"allow_multi_character"`
 }
