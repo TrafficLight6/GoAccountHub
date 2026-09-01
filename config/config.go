@@ -15,6 +15,8 @@ type Config struct {
 	DatabasePassword string `json:"database_password"`
 
 	RootAdminPassword string `json:"root_admin_password"`
+
+	AllowMultiCharacter bool `json:"allow_multi_character"`
 }
 
 func GetConfig(path string) Config {

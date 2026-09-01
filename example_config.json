@@ -1,12 +1,14 @@
 {
     "port": "8080",
     
-    "database_type": "mysql",
-    "database_name": "account_hub",
-    "database_host": "localhost",
-    "database_port": "3306",
-    "database_user": "root",
-    "database_password": "123456",
+    "database_type": "",
+    "database_name": "",
+    "database_host": "",
+    "database_port": "",
+    "database_user": "",
+    "database_password": "",
 
-    "root_admin_password": "123456"
+    "root_admin_password": "",
+
+    "allow_multi_character": true
 }
