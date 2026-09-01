@@ -23,3 +23,7 @@ func GetConfig(path string) Config {
 	jsonOperate.Unmarshal(file.Read(path), &config, " on "+path)
 	return config
 }
+
+func SaveConfig(path string, config Config) {
+	file.Write(path, jsonOperate.Marshal(config))
+}
