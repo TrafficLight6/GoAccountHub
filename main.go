@@ -1,10 +1,37 @@
 package main
 
 import (
-	"github.com/TrafficLight6/GoAccountHub/router"
+	"fmt"
+	"os"
+
+	"github.com/urfave/cli/v2"
 )
 
 func main() {
-	router := router.ReturnRouter()
-	router.Run(":8080")
+	app := &cli.App{
+		Name:  "account_hub",
+		Usage: "account hub example",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "config",
+				Aliases: []string{"c"},
+				Value:   "config.json",
+				Usage:   "config file",
+			},
+		},
+		Action: func(c *cli.Context) error {
+			config := StartServer(c.String("config"))
+			if config.Port == "" {
+				fmt.Println("⚠️ Config Error: File [" + c.String("config") + "] is Empty or Not Exist")
+				return nil
+			}
+			fmt.Println("Account Hub is Running on http://127.0.0.1:" + config.Port)
+			return nil
+		},
+	}
+
+	err := app.Run(os.Args)
+	if err != nil {
+		fmt.Println(err)
+	}
 }
