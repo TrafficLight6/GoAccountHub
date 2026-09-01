@@ -25,7 +25,6 @@ func main() {
 				fmt.Println("⚠️ Config Error: File [" + c.String("config") + "] is Empty or Not Exist")
 				return nil
 			}
-			fmt.Println("Account Hub is Running on http://127.0.0.1:" + config.Port)
 			return nil
 		},
 	}
