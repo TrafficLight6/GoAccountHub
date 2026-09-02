@@ -19,7 +19,7 @@ type Permission struct {
 	CanAddAdmin    bool `gorm:"column:can_add_admin" json:"can_add_admin"`
 	CanDeleteAdmin bool `gorm:"column:can_delete_admin" json:"can_delete_admin"`
 	CanEditAdmin   bool `gorm:"column:can_edit_admin" json:"can_edit_admin"`
-	CanViewAdmin   bool `gorm:"column:can_view_admin" json:"can_view_admin"`
+	CanGetAdmin    bool `gorm:"column:can_get_admin" json:"can_get_admin"`
 }
 
 type AdminForEdit struct {
