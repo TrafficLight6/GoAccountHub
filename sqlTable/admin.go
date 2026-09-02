@@ -14,5 +14,6 @@ type Admin struct {
 	Permission Permission `gorm:"column:permission;type:jsonb;serializer:json"`
 }
 
-type Permission struct {
+type Permission struct { //All Fields must be Boolean Type
+	CanAddAdmin bool `gorm:"column:can_add_admin" json:"can_add_admin"`
 }
