@@ -14,6 +14,7 @@ type Config struct {
 	DatabasePassword string `json:"database_password"`
 
 	RootAdminPasswordHash string `json:"root_admin_password_hash"`
+	RootAdminUUHash       string `json:"root_admin_uu_hash"`
 
 	AllowMultiCharacter bool `json:"allow_multi_character"`
 }

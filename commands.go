@@ -50,6 +50,7 @@ func EditPasswordAction() *cli.Command {
 				return nil
 			}
 			appConfig.RootAdminPasswordHash = hash.SHA256(c.Args().First())
+			appConfig.RootAdminUUHash = hash.SHA256("root" + appConfig.RootAdminPasswordHash)
 			config.SaveConfig(c.String("config"), appConfig)
 			fmt.Println("✅ Password is Updated")
 			return nil
