@@ -12,12 +12,12 @@ func GetAdminByToken(db *gorm.DB, token string, appConfig config.Config) (sqlTab
 		return sqlTable.Admin{}, err
 	}
 	//Check is Root Admin
-	if adminLoginToken.AdminUUHash == appConfig.RootAdminUUHash {
+	if adminLoginToken.UUHash == appConfig.RootAdminUUHash {
 		return sqlTable.Admin{Username: "root"}, nil
 	}
 	//Check is Normal Admin
 	var admin sqlTable.Admin
-	if err := db.Where("uu_hash = ?", adminLoginToken.AdminUUHash).First(&admin).Error; err != nil {
+	if err := db.Where("uu_hash = ?", adminLoginToken.UUHash).First(&admin).Error; err != nil {
 		return sqlTable.Admin{}, err
 	}
 	return admin, nil

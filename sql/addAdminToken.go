@@ -9,9 +9,9 @@ import (
 
 func AddAdminToken(db *gorm.DB, adminUUHash string, token string, deadTime time.Time) error {
 	loginToken := sqlTable.AdminLoginToken{
-		AdminUUHash: adminUUHash,
-		Token:       token,
-		DeadTime:    deadTime,
+		UUHash:   adminUUHash,
+		Token:    token,
+		DeadTime: deadTime,
 	}
 	return db.Create(&loginToken).Error
 }
