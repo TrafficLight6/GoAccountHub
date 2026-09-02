@@ -11,6 +11,8 @@ var (
 	//Tables to be created
 	Tables = []any{
 		&sqlTable.User{},
+		&sqlTable.Admin{},
+		&sqlTable.AdminLoginToken{},
 	}
 )
 

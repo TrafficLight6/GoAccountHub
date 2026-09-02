@@ -1,10 +1,1 @@
-{
-    "port": "8080",
-    "database_name": "GoAccountHub",
-    "database_host": "127.0.0.1",
-    "database_port": "5432",
-    "database_user": "postgres",
-    "database_password": "postgres",
-    "root_admin_password_hash": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
-    "allow_multi_character": true
-}
+{"port":"8080","database_name":"GoAccountHub","database_host":"127.0.0.1","database_port":"5432","database_user":"postgres","database_password":"postgres","root_admin_password_hash":"a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3","allow_multi_character":true}

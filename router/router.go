@@ -16,12 +16,20 @@ func ReturnRouter(config config.Config) (*gin.Engine, *gorm.DB) {
 		return nil, nil
 	}
 
+	//Middleware
+	router.Use(middleware.ConfigInsertMiddleware(config))
+	router.Use(middleware.DBInsertMiddleware(db))
+
 	router.RouterGroup.Group("/")
 	//Root Page
 	router.GET("/", controllor.Root)
 
-	//Middleware
-	router.Use(middleware.ConfigInsertMiddleware(config))
-	router.Use(middleware.DBInsertMiddleware(db))
+	//v1 Api
+	v1 := router.Group("/api/v1")
+	{
+		//Admin Api
+		v1.GET("/admin/login", controllor.AdminLogin)
+	}
+
 	return router, db
 }
