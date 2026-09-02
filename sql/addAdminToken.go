@@ -7,11 +7,11 @@ import (
 	"gorm.io/gorm"
 )
 
-func InsertAdminToken(db *gorm.DB, adminID uint, token string, deadTime time.Time) error {
+func AddAdminToken(db *gorm.DB, adminUUHash string, token string, deadTime time.Time) error {
 	loginToken := sqlTable.AdminLoginToken{
-		AdminID:  adminID,
-		Token:    token,
-		DeadTime: deadTime,
+		AdminUUHash: adminUUHash,
+		Token:       token,
+		DeadTime:    deadTime,
 	}
 	return db.Create(&loginToken).Error
 }

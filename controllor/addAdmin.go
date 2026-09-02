@@ -2,6 +2,8 @@ package controllor
 
 import (
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/TrafficLight6/GoAccountHub/hash"
 	"github.com/TrafficLight6/GoAccountHub/sqlTable"
@@ -48,7 +50,9 @@ func AddAdmin(c *gin.Context) {
 	err := db.Create(&sqlTable.Admin{
 		Username:     body.Username,
 		PasswordHash: hash.SHA256(body.Password),
-		Permission:   body.Permission,
+		UUHash:       hash.SHA256(body.Username + hash.SHA256(body.Password) + strconv.Itoa(int(time.Now().Unix()))),
+
+		Permission: body.Permission,
 	}).Error
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": http.StatusInternalServerError, "error": "Internal Server Error When Adding Admin"})

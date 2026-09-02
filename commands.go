@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"strconv"
+	"time"
 
 	"github.com/TrafficLight6/GoAccountHub/config"
 	"github.com/TrafficLight6/GoAccountHub/hash"
@@ -50,7 +52,7 @@ func EditPasswordAction() *cli.Command {
 				return nil
 			}
 			appConfig.RootAdminPasswordHash = hash.SHA256(c.Args().First())
-			appConfig.RootAdminUUHash = hash.SHA256("root" + appConfig.RootAdminPasswordHash)
+			appConfig.RootAdminUUHash = hash.SHA256("root" + appConfig.RootAdminPasswordHash + strconv.Itoa(int(time.Now().Unix())))
 			config.SaveConfig(c.String("config"), appConfig)
 			fmt.Println("✅ Password is Updated")
 			return nil

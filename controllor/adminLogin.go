@@ -35,10 +35,10 @@ func AdminLogin(c *gin.Context) {
 		var err error
 		if body.IsRemember {
 			c.SetCookie("admin_token", token, 30*24*60*60, "/", "", false, true)
-			err = sqlOperator.InsertAdminToken(db, 0, token, time.Now().Add(30*24*time.Hour))
+			err = sqlOperator.AddAdminToken(db, config.RootAdminUUHash, token, time.Now().Add(30*24*time.Hour))
 		} else {
 			c.SetCookie("admin_token", token, 0, "/", "", false, true)
-			err = sqlOperator.InsertAdminToken(db, 0, token, time.Now().Add(1*time.Hour))
+			err = sqlOperator.AddAdminToken(db, config.RootAdminUUHash, token, time.Now().Add(1*time.Hour))
 		}
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"code": http.StatusInternalServerError, "message": "insert admin token failed"})
@@ -60,10 +60,10 @@ func AdminLogin(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": http.StatusOK, "message": "login success", "token": token})
 	if body.IsRemember {
 		c.SetCookie("admin_token", token, 30*24*60*60, "/", "", false, true)
-		err = sqlOperator.InsertAdminToken(db, admin.ID, token, time.Now().Add(30*24*time.Hour))
+		err = sqlOperator.AddAdminToken(db, admin.UUHash, token, time.Now().Add(30*24*time.Hour))
 	} else {
 		c.SetCookie("admin_token", token, 0, "/", "", false, true)
-		err = sqlOperator.InsertAdminToken(db, admin.ID, token, time.Now().Add(1*time.Hour))
+		err = sqlOperator.AddAdminToken(db, admin.UUHash, token, time.Now().Add(1*time.Hour))
 	}
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": http.StatusInternalServerError, "message": "insert admin token failed"})

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/TrafficLight6/GoAccountHub/config"
 	sqlOperator "github.com/TrafficLight6/GoAccountHub/sql"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -20,8 +21,10 @@ func AdminPermissionCheckMiddleware(fieldName string) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+		//Get Config
+		appConfig := c.Value("config").(config.Config)
 		//Get Admin from Token
-		admin, err := sqlOperator.GetAdminByToken(db, adminToken)
+		admin, err := sqlOperator.GetAdminByToken(db, adminToken, appConfig)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"code": http.StatusUnauthorized, "error": "Admin Info Not Found"})
 			c.Abort()
