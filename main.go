@@ -14,6 +14,8 @@ func main() {
 		Commands: []*cli.Command{
 			StartServerAction(),
 			EditPasswordAction(),
+			GenerateConfigAction(),
+			GenerateTestConfigAction(),
 		},
 	}
 
