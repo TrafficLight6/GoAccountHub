@@ -23,6 +23,8 @@ type Permission struct {
 	CanGetAdmin    bool `gorm:"column:can_get_admin" json:"can_get_admin"`
 	//User Permission
 	CanOperateUser bool `gorm:"column:can_operate_user" json:"can_operate_user"`
+	//Character Permission
+	CanOperateCharacter bool `gorm:"column:can_operate_character" json:"can_operate_character"`
 }
 
 type AdminForEdit struct {

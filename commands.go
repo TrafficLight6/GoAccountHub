@@ -102,7 +102,9 @@ func GenerateTestConfigAction() *cli.Command {
 				DatabasePassword:      "postgres",
 				RootAdminPasswordHash: hash.SHA256("123"),
 				RootAdminUUHash:       hash.SHA256("root" + hash.SHA256("123") + strconv.Itoa(int(time.Now().Unix()))),
-				AllowMultiCharacter:   false,
+				SwitchConfig: config.SwitchConfig{
+					AllowMultiCharacter: false,
+				},
 			}
 			config.SaveConfig(c.String("config"), appConfig)
 			fmt.Println("✅ Config File is Generated, Default Password is 123")

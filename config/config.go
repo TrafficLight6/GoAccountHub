@@ -16,6 +16,11 @@ type Config struct {
 	RootAdminPasswordHash string `json:"root_admin_password_hash"`
 	RootAdminUUHash       string `json:"root_admin_uu_hash"`
 
+	//Bool ONLY
+	SwitchConfig SwitchConfig `json:"switch_config"`
+}
+
+type SwitchConfig struct {
 	AllowMultiCharacter bool `json:"allow_multi_character"`
 }
 

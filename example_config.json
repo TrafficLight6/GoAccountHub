@@ -9,5 +9,7 @@
     "root_admin_password_hash": "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3",
     "root_admin_uu_hash": "15de633d1f56bbcb1e8e81ccdea6cc8b710f0bcdc24af74f992b9b1ab420a7b3",
 
-    "allow_multi_character": true
+    "switch_config": {
+        "allow_multi_character": false
+    }
 }
