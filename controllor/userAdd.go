@@ -29,7 +29,7 @@ func UserAdd(c *gin.Context) {
 	//is Name Exist
 	var user sqlTable.User
 	if err := db.Where("username = ?", body.Username).First(&user).Error; err == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"code": http.StatusBadRequest, "error": "Username Already Exist"})
+		c.JSON(http.StatusBadRequest, gin.H{"code": http.StatusBadRequest, "error": "Username Already be Used"})
 		c.Abort()
 		return
 	}
