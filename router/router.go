@@ -27,6 +27,8 @@ func ReturnRouter(config config.Config) (*gin.Engine, *gorm.DB) {
 	//v1 Api
 	v1 := router.Group("/api/v1")
 	{
+		//ALL ADMIN ONLY
+
 		//Admin Api
 		//Login & Logout
 		v1.GET("/admin/login", controllor.AdminLogin)
@@ -39,14 +41,12 @@ func ReturnRouter(config config.Config) (*gin.Engine, *gorm.DB) {
 		v1.GET("/admin/get", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_get_admin"), controllor.AdminGet)
 
 		//User Api
-		//User Operation, Admin Only
 		v1.POST("/user/add", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_user"), controllor.UserAdd)
 		v1.DELETE("/user/delete", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_user"), controllor.UserDelete)
 		v1.PUT("/user/edit", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_user"), controllor.UserEdit)
 		v1.GET("/user/get", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_user"), controllor.UserGet)
 
 		//Character Api
-		//Also Admin Only
 		//Check is Allowed to Use Multi Character Functions
 		v1.Use(middleware.ConfigBlocker("allow_multi_character"))
 		//Character Operation
