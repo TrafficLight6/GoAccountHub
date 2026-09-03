@@ -31,19 +31,27 @@ func ReturnRouter(config config.Config) (*gin.Engine, *gorm.DB) {
 		//Login & Logout
 		v1.GET("/admin/login", controllor.AdminLogin)
 		v1.DELETE("/admin/logout", controllor.AdminLogout)
+
 		//Admin Operation
 		v1.POST("/admin/add", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_add_admin"), controllor.AdminAdd)
 		v1.DELETE("/admin/delete", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_delete_admin"), controllor.AdminDelete)
 		v1.PUT("/admin/edit", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_edit_admin"), controllor.AdminEdit)
 		v1.GET("/admin/get", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_get_admin"), controllor.AdminGet)
+
 		//User Api
 		//User Operation, Admin Only
 		v1.POST("/user/add", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_user"), controllor.UserAdd)
 		v1.DELETE("/user/delete", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_user"), controllor.UserDelete)
 		v1.PUT("/user/edit", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_user"), controllor.UserEdit)
 		v1.GET("/user/get", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_user"), controllor.UserGet)
+
 		//Character Api
-		v1.POST("/character/add", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_character"), middleware.ConfigBlocker("allow_multi_character"), controllor.CharacterAdd)
+		//Also Admin Only
+		//Check is Allowed to Use Multi Character Functions
+		v1.Use(middleware.ConfigBlocker("allow_multi_character"))
+		//Character Operation
+		v1.POST("/character/add", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_character"), controllor.CharacterAdd)
+		v1.PUT("/character/edit", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_character"), controllor.CharacterEdit)
 	}
 
 	return router, db
