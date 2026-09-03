@@ -26,7 +26,6 @@ func AddAdmin(c *gin.Context) {
 	}
 	//Get Db
 	db := c.Value("db").(*gorm.DB)
-	//Check Args
 	//is Name Exist
 	var admin sqlTable.Admin
 	if err := db.Where("username = ?", body.Username).First(&admin).Error; err == nil {
