@@ -51,6 +51,7 @@ func ReturnRouter(config config.Config) (*gin.Engine, *gorm.DB) {
 		v1.Use(middleware.ConfigBlocker("allow_multi_character"))
 		//Character Operation
 		v1.POST("/character/add", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_character"), controllor.CharacterAdd)
+		v1.DELETE("/character/delete", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_character"), controllor.CharacterDelete)
 		v1.PUT("/character/edit", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_character"), controllor.CharacterEdit)
 	}
 
