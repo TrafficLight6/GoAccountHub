@@ -19,7 +19,7 @@ type UserAddRequestBody struct {
 }
 
 func UserAdd(c *gin.Context) {
-	var body AddUserRequestBody
+	var body UserAddRequestBody
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"code": http.StatusBadRequest, "error": "Invalid Request Body"})
 		return
