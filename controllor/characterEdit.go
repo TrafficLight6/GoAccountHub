@@ -25,12 +25,6 @@ func CharacterEdit(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	//Check CharacterName and Password are not empty
-	if body.CharacterName == "" || body.Password == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"code": http.StatusBadRequest, "error": "Character Name or Password Is Empty"})
-		c.Abort()
-		return
-	}
 	//Get Db
 	db := c.Value("db").(*gorm.DB)
 	//Check User UUHash
