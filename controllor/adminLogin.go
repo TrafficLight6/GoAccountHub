@@ -53,7 +53,7 @@ func AdminLogin(c *gin.Context) {
 		return
 	}
 	if admin.ID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"code": http.StatusUnauthorized, "message": "invalid credentials"})
+		c.JSON(http.StatusBadRequest, gin.H{"code": http.StatusBadRequest, "message": "invalid credentials"})
 		return
 	}
 	token := hash.SHA256(body.Username + body.Password + time.Now().String())
