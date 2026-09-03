@@ -1,7 +1,5 @@
-# User Model  
-login  
-signup  
-  
-add character  
-user meta date  
-character meta date
+# Character & User Model  
+- login  
+- signup  
+
+# Rows Range to Admin, User & Character(Admin Only)
