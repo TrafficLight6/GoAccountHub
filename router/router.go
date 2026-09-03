@@ -37,8 +37,9 @@ func ReturnRouter(config config.Config) (*gin.Engine, *gorm.DB) {
 		v1.PUT("/admin/edit", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_edit_admin"), controllor.AdminEdit)
 		v1.GET("/admin/get", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_get_admin"), controllor.AdminGet)
 		//User Api
-		//User Operation
+		//User Operation, Admin Only
 		v1.POST("/user/add", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_user"), controllor.UserAdd)
+		v1.DELETE("/user/delete", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_user"), controllor.UserDelete)
 	}
 
 	return router, db
