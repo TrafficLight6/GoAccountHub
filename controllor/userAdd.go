@@ -57,8 +57,9 @@ func UserAdd(c *gin.Context) {
 		CharacterName: user.Username,
 		PasswordHash:  user.PasswordHash,
 		UserUUHash:    user.UUHash,
-		UUHash:        user.UUHash,
-		MetaData:      user.MetaData,
+		//If UUHash of User and Character is Same,Then Character is Same Name Character
+		UUHash:   user.UUHash,
+		MetaData: user.MetaData,
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": http.StatusInternalServerError, "error": "Internal Server Error When Adding Character"})
