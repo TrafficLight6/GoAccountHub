@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type AdminLoginToken struct {
+type UserLoginToken struct {
 	gorm.Model
 	ID       uint      `gorm:"primaryKey"`
 	UUHash   string    `gorm:"column:uu_hash"`
