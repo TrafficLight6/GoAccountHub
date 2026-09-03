@@ -9,13 +9,13 @@ import (
 	"gorm.io/gorm"
 )
 
-type DeleteAdminRequestBody struct {
+type AdminDeleteRequestBody struct {
 	UUHash string `json:"uu_hash"`
 }
 
-func DeleteAdmin(c *gin.Context) {
+func AdminDelete(c *gin.Context) {
 	//Get Request Body
-	var body DeleteAdminRequestBody
+	var body AdminDeleteRequestBody
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"code": http.StatusBadRequest, "error": "Invalid Request Body"})
 		return

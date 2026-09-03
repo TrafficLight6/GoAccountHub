@@ -12,13 +12,13 @@ import (
 	"gorm.io/gorm"
 )
 
-type AddUserRequestBody struct {
+type UserAddRequestBody struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 	MetaData string `json:"meta_data"`
 }
 
-func AddUser(c *gin.Context) {
+func UserAdd(c *gin.Context) {
 	var body AddUserRequestBody
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"code": http.StatusBadRequest, "error": "Invalid Request Body"})

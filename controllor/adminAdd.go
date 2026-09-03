@@ -11,15 +11,15 @@ import (
 	"gorm.io/gorm"
 )
 
-type AddAdminRequestBody struct {
+type AdminAddRequestBody struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 
 	Permission sqlTable.Permission `json:"permission"`
 }
 
-func AddAdmin(c *gin.Context) {
-	var body AddAdminRequestBody
+func AdminAdd(c *gin.Context) {
+	var body AdminAddRequestBody
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"code": http.StatusBadRequest, "error": "Invalid Request Body"})
 		return

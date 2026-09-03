@@ -9,13 +9,13 @@ import (
 	"gorm.io/gorm"
 )
 
-type GetAdminResponse struct {
+type AdminGetResponseBody struct {
 	UUHash string `json:"uu_hash"`
 }
 
-func GetAdmin(c *gin.Context) {
+func AdminGet(c *gin.Context) {
 	//Get Request Body
-	var body GetAdminResponse
+	var body AdminGetResponseBody
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"code": http.StatusBadRequest, "error": "Invalid Request Body"})
 		return

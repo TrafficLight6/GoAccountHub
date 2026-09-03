@@ -10,14 +10,14 @@ import (
 	"gorm.io/gorm"
 )
 
-type EditAdminRequestBody struct {
+type AdminEditRequestBody struct {
 	UUHash    string                `json:"uu_hash"`    //Target Admin uu_hash
 	AdminInfo sqlTable.AdminForEdit `json:"admin_info"` //Target Admin Info
 }
 
-func EditAdmin(c *gin.Context) {
+func AdminEdit(c *gin.Context) {
 	//Get Request Body
-	var body EditAdminRequestBody
+	var body AdminEditRequestBody
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"code": http.StatusBadRequest, "error": "Invalid Request Body"})
 		return
