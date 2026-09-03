@@ -58,5 +58,5 @@ func AdminAdd(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"code": http.StatusOK, "message": "Admin Added"})
+	c.JSON(http.StatusOK, gin.H{"code": http.StatusOK, "message": "Admin Added", "admin": admin})
 }

@@ -67,5 +67,5 @@ func UserAdd(c *gin.Context) {
 		return
 	}
 	//Return Success
-	c.JSON(http.StatusOK, gin.H{"code": http.StatusOK, "message": "User Added Successfully,And Same Name Character Added Successfully"})
+	c.JSON(http.StatusOK, gin.H{"code": http.StatusOK, "message": "User Added Successfully,And Same Name Character Added Successfully", "user": user})
 }

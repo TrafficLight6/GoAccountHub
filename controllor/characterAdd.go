@@ -73,5 +73,5 @@ func CharacterAdd(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"code": http.StatusOK, "message": "Character Added Successfully"})
+	c.JSON(http.StatusOK, gin.H{"code": http.StatusOK, "message": "Character Added Successfully", "character": character})
 }
