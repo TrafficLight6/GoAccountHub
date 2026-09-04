@@ -59,5 +59,8 @@ func ReturnRouter(config config.Config) (*gin.Engine, *gorm.DB) {
 		v1.GET("/character/range", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_character_range"), adminControllor.CharacterRange)
 	}
 
+	{
+		//USER ONLY
+	}
 	return router, db
 }
