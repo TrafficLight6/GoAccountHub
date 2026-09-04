@@ -56,6 +56,7 @@ func ReturnRouter(config config.Config) (*gin.Engine, *gorm.DB) {
 		v1.DELETE("/character/delete", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_character"), adminControllor.CharacterDelete)
 		v1.PUT("/character/edit", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_character"), adminControllor.CharacterEdit)
 		v1.GET("/character/get", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_character"), adminControllor.CharacterGet)
+		v1.GET("/character/range", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_character_range"), adminControllor.CharacterRange)
 	}
 
 	return router, db
