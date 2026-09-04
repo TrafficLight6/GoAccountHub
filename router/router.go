@@ -46,6 +46,7 @@ func ReturnRouter(config config.Config) (*gin.Engine, *gorm.DB) {
 		v1.DELETE("/user/delete", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_user"), adminControllor.UserDelete)
 		v1.PUT("/user/edit", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_user"), adminControllor.UserEdit)
 		v1.GET("/user/get", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_user"), adminControllor.UserGet)
+		v1.GET("/user/range", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_user_range"), adminControllor.UserRange)
 
 		//Character Api
 		//Check is Allowed to Use Multi Character Functions
