@@ -1,4 +1,4 @@
-package controllor
+package adminControllor
 
 import (
 	"net/http"
