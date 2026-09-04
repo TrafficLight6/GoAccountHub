@@ -78,4 +78,5 @@ func UserRange(c *gin.Context) {
 	}
 	//Return Result
 	c.JSON(http.StatusOK, gin.H{"code": http.StatusOK, "message": "Success", "data": users})
+	return
 }
