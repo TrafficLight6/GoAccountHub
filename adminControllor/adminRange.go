@@ -49,7 +49,7 @@ func AdminRange(c *gin.Context) {
 	}
 	//Get Db
 	db := c.Value("db").(*gorm.DB)
-	//Build Search Query (only non-empty fields, combined with OR)
+	//Build Search Query (only non-empty fields, combined with AND)
 	condition := body.SearchCondition
 	var conditions []string
 	var args []interface{}
@@ -67,7 +67,7 @@ func AdminRange(c *gin.Context) {
 	}
 	query := db.Model(&sqlTable.Admin{})
 	if len(conditions) > 0 {
-		query = query.Where(strings.Join(conditions, " OR "), args...)
+		query = query.Where(strings.Join(conditions, " AND "), args...)
 	}
 	//Search
 	var admins []sqlTable.Admin
