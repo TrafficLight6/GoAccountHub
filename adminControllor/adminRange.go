@@ -11,12 +11,12 @@ import (
 
 type AdminRangeRequestBody struct {
 	//It the Length is -1, It Means Get All Admin from BeginTableId to The End
-	BeginTableId    int             `json:"begin_table_id"`
-	Length          int             `json:"length"`
-	SearchCondition SearchCondition `json:"search_condition"`
+	BeginTableId    int                  `json:"begin_table_id"`
+	Length          int                  `json:"length"`
+	SearchCondition AdminSearchCondition `json:"search_condition"`
 }
 
-type SearchCondition struct {
+type AdminSearchCondition struct {
 	//If The Field is Empty, It Means Ignore This Condition
 	Username     string `json:"username"`
 	PasswordHash string `json:"password_hash"`
