@@ -8,8 +8,6 @@ import (
 	"gorm.io/gorm"
 )
 
-//db := sqlOperator.GetDB()
-
 type AdminLogoutRequest struct {
 	Token string `json:"token"`
 }
