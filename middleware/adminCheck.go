@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+	"time"
 
 	sqlOperator "github.com/TrafficLight6/GoAccountHub/sql"
 	"github.com/gin-gonic/gin"
@@ -19,6 +20,12 @@ func AdminCheckMiddleware() gin.HandlerFunc {
 		adminToken, err := sqlOperator.GetAdminToken(c.Value("db").(*gorm.DB), cookie)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"code": http.StatusUnauthorized, "error": "admin_token invalid"})
+			c.Abort()
+			return
+		}
+		//Check token expiration
+		if !adminToken.DeadTime.After(time.Now()) {
+			c.JSON(http.StatusUnauthorized, gin.H{"code": http.StatusUnauthorized, "error": "admin_token expired"})
 			c.Abort()
 			return
 		}
