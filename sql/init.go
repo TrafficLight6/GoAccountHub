@@ -17,6 +17,8 @@ var (
 		&sqlTable.UserLoginToken{},
 
 		&sqlTable.Character{},
+
+		&sqlTable.ApplicationKey{},
 	}
 )
 
