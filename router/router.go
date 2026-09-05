@@ -2,10 +2,10 @@ package router
 
 import (
 	"github.com/TrafficLight6/GoAccountHub/adminControllor"
+	"github.com/TrafficLight6/GoAccountHub/appControllor"
 	"github.com/TrafficLight6/GoAccountHub/config"
 	"github.com/TrafficLight6/GoAccountHub/middleware"
 	sqlOperator "github.com/TrafficLight6/GoAccountHub/sql"
-	"github.com/TrafficLight6/GoAccountHub/userControllor"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -64,8 +64,8 @@ func ReturnRouter(config config.Config) (*gin.Engine, *gorm.DB) {
 		//USER ONLY
 		export := v1.Group("/export")
 		//Login & Logout
-		export.POST("/user/login", userControllor.Login)
-		export.DELETE("/user/logout", userControllor.Logout)
+		export.POST("/user/login", appControllor.Login)
+		export.DELETE("/user/logout", appControllor.Logout)
 	}
 	return router, db
 }

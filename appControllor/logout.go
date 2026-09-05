@@ -1,4 +1,4 @@
-package userControllor
+package appControllor
 
 import (
 	"net/http"
