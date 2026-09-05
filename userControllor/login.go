@@ -94,12 +94,6 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": http.StatusInternalServerError, "message": "Add token failed"})
 		return
 	}
-	//Set cookie (must be before c.JSON, otherwise headers are already flushed)
-	if body.IsRemember {
-		c.SetCookie("user_token", token, 30*24*60*60, "/", "", false, true)
-	} else {
-		c.SetCookie("user_token", token, 0, "/", "", false, true)
-	}
 	//Return token
 	c.JSON(http.StatusOK, gin.H{"code": http.StatusOK, "message": "Login success", "token": token})
 	return
