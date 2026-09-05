@@ -31,19 +31,23 @@ func AdminLogin(c *gin.Context) {
 	//Root Admin Login
 	if "root" == body.Username && config.RootAdminPasswordHash == hash.SHA256(body.Password) {
 		token := hash.SHA256(body.Username + body.Password + time.Now().String())
-		c.JSON(http.StatusOK, gin.H{"code": http.StatusOK, "message": "login success", "token": token})
 		var err error
 		if body.IsRemember {
-			c.SetCookie("admin_token", token, 30*24*60*60, "/", "", false, true)
 			err = sqlOperator.AddAdminToken(db, config.RootAdminUUHash, token, time.Now().Add(30*24*time.Hour))
 		} else {
-			c.SetCookie("admin_token", token, 0, "/", "", false, true)
 			err = sqlOperator.AddAdminToken(db, config.RootAdminUUHash, token, time.Now().Add(1*time.Hour))
 		}
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"code": http.StatusInternalServerError, "message": "insert admin token failed"})
 			return
 		}
+		//Set cookie (must be before c.JSON, otherwise headers are already flushed)
+		if body.IsRemember {
+			c.SetCookie("admin_token", token, 30*24*60*60, "/", "", false, true)
+		} else {
+			c.SetCookie("admin_token", token, 0, "/", "", false, true)
+		}
+		c.JSON(http.StatusOK, gin.H{"code": http.StatusOK, "message": "login success", "token": token})
 		return
 	}
 	//Normal Admin Login
@@ -57,16 +61,20 @@ func AdminLogin(c *gin.Context) {
 		return
 	}
 	token := hash.SHA256(body.Username + body.Password + time.Now().String())
-	c.JSON(http.StatusOK, gin.H{"code": http.StatusOK, "message": "login success", "token": token})
 	if body.IsRemember {
-		c.SetCookie("admin_token", token, 30*24*60*60, "/", "", false, true)
 		err = sqlOperator.AddAdminToken(db, admin.UUHash, token, time.Now().Add(30*24*time.Hour))
 	} else {
-		c.SetCookie("admin_token", token, 0, "/", "", false, true)
 		err = sqlOperator.AddAdminToken(db, admin.UUHash, token, time.Now().Add(1*time.Hour))
 	}
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": http.StatusInternalServerError, "message": "insert admin token failed"})
 		return
 	}
+	//Set cookie (must be before c.JSON, otherwise headers are already flushed)
+	if body.IsRemember {
+		c.SetCookie("admin_token", token, 30*24*60*60, "/", "", false, true)
+	} else {
+		c.SetCookie("admin_token", token, 0, "/", "", false, true)
+	}
+	c.JSON(http.StatusOK, gin.H{"code": http.StatusOK, "message": "login success", "token": token})
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/TrafficLight6/GoAccountHub/config"
 	"github.com/TrafficLight6/GoAccountHub/middleware"
 	sqlOperator "github.com/TrafficLight6/GoAccountHub/sql"
+	"github.com/TrafficLight6/GoAccountHub/userControllor"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -31,7 +32,7 @@ func ReturnRouter(config config.Config) (*gin.Engine, *gorm.DB) {
 
 		//Admin Api
 		//Login & Logout
-		v1.GET("/admin/login", adminControllor.AdminLogin)
+		v1.POST("/admin/login", adminControllor.AdminLogin)
 		v1.DELETE("/admin/logout", adminControllor.AdminLogout)
 
 		//Admin Operation
@@ -59,5 +60,12 @@ func ReturnRouter(config config.Config) (*gin.Engine, *gorm.DB) {
 		v1.GET("/character/range", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_character_range"), adminControllor.CharacterRange)
 	}
 
+	{
+		//USER ONLY
+		export := v1.Group("/export")
+		//Login & Logout
+		export.POST("/user/login", userControllor.Login)
+		export.DELETE("/user/logout", userControllor.Logout)
+	}
 	return router, db
 }

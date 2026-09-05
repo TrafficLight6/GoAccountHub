@@ -2,4 +2,4 @@
 - login  
 - signup  
 
-# Rows Range to Admin, User & Character(Admin Only)
+# Add Normal User Api

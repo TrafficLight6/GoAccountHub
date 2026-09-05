@@ -10,6 +10,7 @@
     "root_admin_uu_hash": "15de633d1f56bbcb1e8e81ccdea6cc8b710f0bcdc24af74f992b9b1ab420a7b3",
 
     "switch_config": {
-        "allow_multi_character": true
+        "allow_multi_character": true,
+        "allow_sign_up": true
     }
 }

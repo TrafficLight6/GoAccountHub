@@ -22,6 +22,7 @@ type Config struct {
 
 type SwitchConfig struct {
 	AllowMultiCharacter bool `json:"allow_multi_character"`
+	AllowAdminLogout    bool `json:"allow_admin_logout"`
 }
 
 func GetConfig(path string) Config {

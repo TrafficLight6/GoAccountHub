@@ -1,19 +1,20 @@
-package adminControllor
+package userControllor
 
 import (
 	"net/http"
 
 	sqlOperator "github.com/TrafficLight6/GoAccountHub/sql"
 	"github.com/gin-gonic/gin"
+
 	"gorm.io/gorm"
 )
 
-type AdminLogoutRequest struct {
+type UserLogoutRequest struct {
 	Token string `json:"token"`
 }
 
-func AdminLogout(c *gin.Context) {
-	var body AdminLogoutRequest
+func Logout(c *gin.Context) {
+	var body UserLogoutRequest
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"code": http.StatusBadRequest, "error": "Invalid request body"})
 		return
@@ -26,12 +27,12 @@ func AdminLogout(c *gin.Context) {
 	//Get db
 	db := c.Value("db").(*gorm.DB)
 	//Check Token Exist
-	if !sqlOperator.CheckAdminToken(db, body.Token) {
+	if !sqlOperator.CheckUserToken(db, body.Token) {
 		c.JSON(http.StatusUnauthorized, gin.H{"code": http.StatusUnauthorized, "error": "Token not found"})
 		return
 	}
 	//Delete Token From Database(Logout)
-	if err := sqlOperator.DelAdminToken(db, body.Token); err != nil {
+	if err := sqlOperator.DeleteUserToken(db, body.Token); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": http.StatusInternalServerError, "error": "Internal server error"})
 		return
 	}
