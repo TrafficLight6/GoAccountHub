@@ -63,8 +63,9 @@ func ReturnRouter(config config.Config) (*gin.Engine, *gorm.DB) {
 	{
 		//USER ONLY
 		export := v1.Group("/export")
-		//Login
+		//Login & Logout
 		export.POST("/user/login", userControllor.Login)
+		export.DELETE("/user/logout", userControllor.Logout)
 	}
 	return router, db
 }
