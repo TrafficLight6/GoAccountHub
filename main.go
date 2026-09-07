@@ -17,6 +17,9 @@ func main() {
 			action.EditPasswordAction(),
 			action.GenerateConfigAction(),
 			action.GenerateTestConfigAction(),
+
+			action.AddApplicationKeyAction(),
+			action.DeleteApplicationKeyAction(),
 		},
 	}
 

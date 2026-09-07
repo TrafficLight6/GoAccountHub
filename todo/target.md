@@ -1,5 +1,4 @@
-# Character & User Model  
-- login  
+# Character & User Model   
 - signup  
 
 # Add Normal User Api
