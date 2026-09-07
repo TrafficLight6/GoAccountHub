@@ -66,6 +66,18 @@ func ReturnRouter(config config.Config) (*gin.Engine, *gorm.DB) {
 		//Login & Logout
 		app.POST("/user/login", middleware.ApplicationKeyCheckMiddleware(), appControllor.Login)
 		app.DELETE("/user/logout", middleware.ApplicationKeyCheckMiddleware(), appControllor.Logout)
+		//User Operation
+		app.POST("/user/add", middleware.ApplicationKeyCheckMiddleware(), adminControllor.UserAdd)
+		app.DELETE("/user/delete", middleware.ApplicationKeyCheckMiddleware(), adminControllor.UserDelete)
+		app.PUT("/user/edit", middleware.ApplicationKeyCheckMiddleware(), adminControllor.UserEdit)
+		app.GET("/user/get", middleware.ApplicationKeyCheckMiddleware(), adminControllor.UserGet)
+		app.GET("/user/range", middleware.ApplicationKeyCheckMiddleware(), adminControllor.UserRange)
+		//Character Operation
+		app.POST("/character/add", middleware.ApplicationKeyCheckMiddleware(), adminControllor.CharacterAdd)
+		app.DELETE("/character/delete", middleware.ApplicationKeyCheckMiddleware(), adminControllor.CharacterDelete)
+		app.PUT("/character/edit", middleware.ApplicationKeyCheckMiddleware(), adminControllor.CharacterEdit)
+		app.GET("/character/get", middleware.ApplicationKeyCheckMiddleware(), adminControllor.CharacterGet)
+		app.GET("/character/range", middleware.ApplicationKeyCheckMiddleware(), adminControllor.CharacterRange)
 		//Get Metadata
 		app.GET("/user/get/metadata", appControllor.GetUserMetaData)
 		app.GET("/character/get/metadata", appControllor.GetCharacterMetaData)
