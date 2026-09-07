@@ -62,10 +62,13 @@ func ReturnRouter(config config.Config) (*gin.Engine, *gorm.DB) {
 
 	{
 		//USER ONLY
-		export := v1.Group("/app")
+		app := v1.Group("/app")
 		//Login & Logout
-		export.POST("/user/login", middleware.ApplicationKeyCheckMiddleware(), appControllor.Login)
-		export.DELETE("/user/logout", middleware.ApplicationKeyCheckMiddleware(), appControllor.Logout)
+		app.POST("/user/login", middleware.ApplicationKeyCheckMiddleware(), appControllor.Login)
+		app.DELETE("/user/logout", middleware.ApplicationKeyCheckMiddleware(), appControllor.Logout)
+		//Get Metadata
+		app.GET("/user/get/metadata", appControllor.GetUserMetaData)
+		app.GET("/character/get/metadata", appControllor.GetCharacterMetaData)
 	}
 	return router, db
 }
