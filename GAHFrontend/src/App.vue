@@ -1,10 +1,7 @@
 <script setup>
-import { ElButton } from 'element-plus'
 import 'element-plus/dist/index.css'
+import Page from './components/Page.vue'
 </script>
-
 <template>
-  <ElButton>
-    Button Text
-  </ElButton>
+    <Page />
 </template>
