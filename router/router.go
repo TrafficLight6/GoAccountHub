@@ -35,6 +35,9 @@ func ReturnRouter(config config.Config) (*gin.Engine, *gorm.DB) {
 		v1.POST("/admin/login", adminControllor.AdminLogin)
 		v1.DELETE("/admin/logout", adminControllor.AdminLogout)
 
+		//Dashboard Info (any logged-in admin can view)
+		v1.GET("/info", middleware.AdminCheckMiddleware(), adminControllor.Info)
+
 		//Admin Operation
 		v1.POST("/admin/add", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_add_admin"), adminControllor.AdminAdd)
 		v1.DELETE("/admin/delete", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_delete_admin"), adminControllor.AdminDelete)
