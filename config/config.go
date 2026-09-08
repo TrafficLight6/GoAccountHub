@@ -13,6 +13,8 @@ type Config struct {
 	DatabaseUser     string `json:"database_user"`
 	DatabasePassword string `json:"database_password"`
 
+	FrontendPort string `json:"frontend_port"`
+
 	RootAdminPasswordHash string `json:"root_admin_password_hash"`
 	RootAdminUUHash       string `json:"root_admin_uu_hash"`
 
