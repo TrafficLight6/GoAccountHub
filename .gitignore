@@ -33,3 +33,5 @@ go.work.sum
 .trae/
 
 *config.json
+
+*node_modules
