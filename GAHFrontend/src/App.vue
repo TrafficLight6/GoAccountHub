@@ -1,7 +1,10 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
+import { ElButton } from 'element-plus'
+import 'element-plus/dist/index.css'
 </script>
 
 <template>
-  <HelloWorld />
+  <ElButton>
+    Button Text
+  </ElButton>
 </template>
