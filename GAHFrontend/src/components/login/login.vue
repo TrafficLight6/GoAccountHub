@@ -7,31 +7,14 @@
         </div>
       </template>
 
-      <el-form
-        ref="loginFormRef"
-        :model="loginForm"
-        :rules="rules"
-        label-position="top"
-        @submit.prevent="handleLogin"
-      >
+      <el-form ref="loginFormRef" :model="loginForm" :rules="rules" label-position="top" @submit.prevent="handleLogin">
         <el-form-item label="用户名" prop="username">
-          <el-input
-            v-model="loginForm.username"
-            placeholder="请输入用户名"
-            :prefix-icon="User"
-            clearable
-          />
+          <el-input v-model="loginForm.username" placeholder="请输入用户名" :prefix-icon="User" clearable />
         </el-form-item>
 
         <el-form-item label="密码" prop="password">
-          <el-input
-            v-model="loginForm.password"
-            type="password"
-            placeholder="请输入密码"
-            :prefix-icon="Lock"
-            show-password
-            @keyup.enter="handleLogin"
-          />
+          <el-input v-model="loginForm.password" type="password" placeholder="请输入密码" :prefix-icon="Lock" show-password
+            @keyup.enter="handleLogin" />
         </el-form-item>
 
         <el-form-item>
@@ -39,12 +22,7 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button
-            type="primary"
-            :loading="loading"
-            class="login-btn"
-            @click="handleLogin"
-          >
+          <el-button type="primary" :loading="loading" class="login-btn" @click="handleLogin">
             登录
           </el-button>
         </el-form-item>
@@ -55,9 +33,12 @@
 
 <script setup>
 import { reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { User, Lock } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import { post } from '../../lib/request'
 
+const router = useRouter()
 const loginFormRef = ref()
 const loading = ref(false)
 
@@ -70,30 +51,48 @@ const loginForm = reactive({
 const rules = {
   username: [
     { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 3, max: 32, message: '长度在 3 到 32 个字符', trigger: 'blur' },
+    { min: 0, max: 32, message: '用户名长度不能超过 32 个字符', trigger: 'blur' },
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, max: 64, message: '长度在 6 到 64 个字符', trigger: 'blur' },
+    { min: 0, max: 64, message: '密码长度不能超过 64 个字符', trigger: 'blur' },
   ],
 }
 
 const handleLogin = async () => {
   if (!loginFormRef.value) return
-  await loginFormRef.value.validate(async (valid) => {
-    if (!valid) return
-    loading.value = true
-    try {
-      // TODO: 调用后端登录接口
-      // const res = await api.login(loginForm)
-      console.log('登录信息:', loginForm)
-      ElMessage.success('登录成功')
-    } catch (e) {
-      ElMessage.error('登录失败，请重试')
-    } finally {
-      loading.value = false
+  try {
+    await loginFormRef.value.validate()
+  } catch {
+    return
+  }
+  loading.value = true
+  try {
+    await post(
+      '/admin/login',
+      {
+        username: loginForm.username,
+        password: loginForm.password,
+        is_remember: loginForm.keepLoggedIn,
+      },
+      { showError: false }
+    )
+    ElMessage.success('登录成功')
+    router.push('/main/home')
+  } catch (e) {
+    if (e.code === 400) {
+      // 凭证错误（用户名/密码错误），统一中文提示
+      ElMessage.error('用户名或密码错误')
+    } else if (e.code) {
+      // 其他后端业务错误
+      ElMessage.error(e.message || '登录失败，请重试')
+    } else {
+      // 网络层异常（断网/后端未启动）
+      ElMessage.error('网络请求失败，请检查网络或后端服务')
     }
-  })
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
