@@ -6,27 +6,30 @@
         <span v-if="!collapsed">GoAccountHub</span>
         <span v-else>GAH</span>
       </div>
-      <el-menu
-        :default-active="activeMenu"
-        :collapse="collapsed"
-        :collapse-transition="false"
-        router
-        class="layout-menu"
-      >
+      <el-menu :default-active="activeMenu" :collapse="collapsed" :collapse-transition="false" router
+        class="layout-menu">
         <el-menu-item index="/main/home">
-          <el-icon><Odometer /></el-icon>
+          <el-icon>
+            <Odometer />
+          </el-icon>
           <template #title>首页</template>
         </el-menu-item>
         <el-menu-item index="/main/admin">
-          <el-icon><SetUp /></el-icon>
+          <el-icon>
+            <SetUp />
+          </el-icon>
           <template #title>管理员管理</template>
         </el-menu-item>
         <el-menu-item index="/main/user">
-          <el-icon><User /></el-icon>
+          <el-icon>
+            <User />
+          </el-icon>
           <template #title>用户管理</template>
         </el-menu-item>
         <el-menu-item index="/main/character">
-          <el-icon><Grid /></el-icon>
+          <el-icon>
+            <Grid />
+          </el-icon>
           <template #title>角色管理</template>
         </el-menu-item>
       </el-menu>
@@ -56,9 +59,10 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { Odometer, Fold, Expand, User, SetUp, Grid } from '@element-plus/icons-vue'
+import { get, post, put, del } from '../../lib/request'
 
 const route = useRoute()
 const collapsed = ref(false)
@@ -67,6 +71,17 @@ const collapsed = ref(false)
 const activeMenu = computed(() => route.path)
 // 当前页面名称：优先取路由 meta.title
 const pageTitle = computed(() => route.meta.title || '首页')
+
+onMounted(()=>{
+  // Check Admin Token
+  get('/admin/check_token').then(respond=>{
+    if(respond.code === 200){
+      console.log('admin_token valid')
+    }else{
+      console.log('admin_token invalid')
+    }
+  })
+})
 </script>
 
 <style scoped>
