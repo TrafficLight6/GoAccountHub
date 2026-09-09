@@ -30,7 +30,7 @@
           <p>删除管理员：<el-icon :class="hasPerm('can_delete_admin') ? 'perm-yes' : 'perm-no'"><CircleCheckFilled v-if="hasPerm('can_delete_admin')" /><CircleCloseFilled v-else /></el-icon></p>
           <p>修改管理员信息：<el-icon :class="hasPerm('can_edit_admin') ? 'perm-yes' : 'perm-no'"><CircleCheckFilled v-if="hasPerm('can_edit_admin')" /><CircleCloseFilled v-else /></el-icon></p>
           <p>查看管理员信息：<el-icon :class="hasPerm('can_get_admin') ? 'perm-yes' : 'perm-no'"><CircleCheckFilled v-if="hasPerm('can_get_admin')" /><CircleCloseFilled v-else /></el-icon></p>
-          <br><br>      <!--用于对齐card内容-->
+          <br><br><br>      <!--用于对齐card内容-->
         </el-card>
       </el-col>
     </el-row>
@@ -86,6 +86,6 @@ onMounted(() => {
   color: #67c23a;
 }
 .perm-no {
-  color: #c0c4cc;
+  color: #F56C6C;
 }
 </style>
