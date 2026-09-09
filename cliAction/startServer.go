@@ -24,7 +24,7 @@ func StartServerAction() *cli.Command {
 		Action: func(c *cli.Context) error {
 			config := config.GetConfig(c.String("config"))
 			//Update Frontend Port
-			file.Write("./GAHFrontend/.env", "PORT="+config.FrontendPort)
+			file.Write("./GAHFrontend/.env", "PORT="+config.FrontendPort+"\nVITE_API_PROXY_TARGET=http://127.0.0.1:"+config.Port)
 			err := server.StartServer(config)
 			if err != nil {
 				fmt.Println("⚠️ Error when Start Server:", err)

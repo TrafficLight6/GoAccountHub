@@ -42,7 +42,6 @@
           </el-icon>
           <el-breadcrumb separator="/">
             <el-breadcrumb-item :to="{ path: '/main/home' }">首页</el-breadcrumb-item>
-
             <el-breadcrumb-item v-if="pageTitle !== '首页'">{{ pageTitle }}</el-breadcrumb-item>
           </el-breadcrumb>
         </div>
