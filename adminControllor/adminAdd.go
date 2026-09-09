@@ -46,13 +46,14 @@ func AdminAdd(c *gin.Context) {
 		return
 	}
 	//Add Admin
-	err := db.Create(&sqlTable.Admin{
+	admin = sqlTable.Admin{
 		Username:     body.Username,
 		PasswordHash: hash.SHA256(body.Password),
 		UUHash:       hash.SHA256(body.Username + hash.SHA256(body.Password) + strconv.Itoa(int(time.Now().Unix()))),
 
 		Permission: body.Permission,
-	}).Error
+	}
+	err := db.Create(&admin).Error
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": http.StatusInternalServerError, "error": "Internal Server Error When Adding Admin"})
 		c.Abort()
