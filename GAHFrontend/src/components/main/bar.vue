@@ -48,6 +48,9 @@
             <el-breadcrumb-item v-if="pageTitle !== '首页'">{{ pageTitle }}</el-breadcrumb-item>
           </el-breadcrumb>
         </div>
+        <div class="header-right">
+          <el-button type="primary" @click="handleLogout">退出登录</el-button>
+        </div>
       </el-header>
 
       <!-- 内容区 -->

@@ -40,7 +40,8 @@ func ReturnRouter(config config.Config) (*gin.Engine, *gorm.DB) {
 		v1.GET("/info", middleware.AdminCheckMiddleware(), adminControllor.Info)
 		//Check Admin Token
 		v1.GET("/admin/check_token", middleware.AdminCheckMiddleware(), checkControllor.CheckAdminToken)
-
+		//Admin Info
+		v1.GET("/admin/info", middleware.AdminCheckMiddleware(), adminControllor.AdminInfo)
 		//Admin Operation
 		v1.POST("/admin/add", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_add_admin"), adminControllor.AdminAdd)
 		v1.DELETE("/admin/delete", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_delete_admin"), adminControllor.AdminDelete)
