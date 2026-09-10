@@ -63,17 +63,30 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Odometer, Fold, Expand, User, SetUp, Grid } from '@element-plus/icons-vue'
 import { get, post, put, del } from '../../lib/request'
 
 const route = useRoute()
+const router = useRouter()
 const collapsed = ref(false)
 
 // 当前激活菜单：取路由路径
 const activeMenu = computed(() => route.path)
 // 当前页面名称：优先取路由 meta.title
 const pageTitle = computed(() => route.meta.title || '首页')
+
+const handleLogout = async () => {
+  try {
+    await del('/admin/logout', {}, { showError: false })
+  } catch {
+    // 即使后端出错也继续清理并跳转
+  }
+  // 删除本地 cookie
+  document.cookie = 'admin_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+  document.cookie = 'admin_name=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+  router.push('/')
+}
 
 onMounted(()=>{
   // Check Admin Token
