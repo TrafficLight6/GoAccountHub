@@ -7,26 +7,25 @@ import (
 	"github.com/TrafficLight6/GoAccountHub/router"
 )
 
-func StartServer(configPath string) config.Config {
-	AppConfig := config.GetConfig(configPath)
-	if AppConfig.Port == "" {
-		return config.Config{}
+func StartServer(config config.Config) error {
+	if config.Port == "" {
+		return fmt.Errorf("Port is empty")
 	}
-	router, db := router.ReturnRouter(AppConfig)
+	router, db := router.ReturnRouter(config)
 	if router == nil || db == nil {
-		return config.Config{}
+		return fmt.Errorf("Router or DB is nil")
 	}
 
 	//Defer Close DB Connection
-	defer func() {
+	defer func() error {
 		sqlDB, err := db.DB()
 		if err != nil {
-			fmt.Println("Error when Close DB:", err)
-			return
+			return err
 		}
 		sqlDB.Close()
+		return nil
 	}()
 
-	router.Run(":" + AppConfig.Port)
-	return AppConfig
+	router.Run(":" + config.Port)
+	return nil
 }

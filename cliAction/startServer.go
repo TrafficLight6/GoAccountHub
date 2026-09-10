@@ -3,6 +3,8 @@ package action
 import (
 	"fmt"
 
+	"github.com/TrafficLight6/GoAccountHub/config"
+	"github.com/TrafficLight6/GoAccountHub/file"
 	"github.com/TrafficLight6/GoAccountHub/server"
 	"github.com/urfave/cli/v2"
 )
@@ -20,10 +22,13 @@ func StartServerAction() *cli.Command {
 			},
 		},
 		Action: func(c *cli.Context) error {
-			config := server.StartServer(c.String("config"))
-			if config.Port == "" {
-				fmt.Println("⚠️ Config Error: File [" + c.String("config") + "] is Empty or Not Exist")
-				return nil
+			config := config.GetConfig(c.String("config"))
+			//Update Frontend Port
+			file.Write("./GAHFrontend/.env", "PORT="+config.FrontendPort+"\nVITE_API_PROXY_TARGET=http://127.0.0.1:"+config.Port)
+			err := server.StartServer(config)
+			if err != nil {
+				fmt.Println("⚠️ Error when Start Server:", err)
+				return err
 			}
 			return nil
 		},
