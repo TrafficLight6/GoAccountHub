@@ -14,19 +14,19 @@
           </el-icon>
           <template #title>首页</template>
         </el-menu-item>
-        <el-menu-item index="/main/admin">
+        <el-menu-item index="/main/admin" v-if="canGetAdmin">
           <el-icon>
             <SetUp />
           </el-icon>
           <template #title>管理员管理</template>
         </el-menu-item>
-        <el-menu-item index="/main/user">
+        <el-menu-item index="/main/user" v-if="canGetUser">
           <el-icon>
             <User />
           </el-icon>
           <template #title>用户管理</template>
         </el-menu-item>
-        <el-menu-item index="/main/character">
+        <el-menu-item index="/main/character" v-if="canGetCharacter">
           <el-icon>
             <Grid />
           </el-icon>
@@ -88,15 +88,39 @@ const handleLogout = async () => {
   router.push('/')
 }
 
+const adminInfo = ref({})
+
+// 权限判断：root 全部放行；普通管理员读 permission 字段；数据未加载时返回 false
+const canGetAdmin = computed(() => {
+  if (adminInfo.value.is_root) return true
+  return Boolean(adminInfo.value.permission?.can_get_admin)
+})
+
+// 权限判断：root 全部放行；普通管理员读 permission 字段；数据未加载时返回 false
+const canGetUser = computed(() => {
+  if (adminInfo.value.is_root) return true
+  return Boolean(adminInfo.value.permission?.can_get_user)
+})
+
+// 权限判断：root 全部放行；普通管理员读 permission 字段；数据未加载时返回 false
+const canGetCharacter = computed(() => {
+  if (adminInfo.value.is_root) return true
+  return Boolean(adminInfo.value.permission?.can_get_character)
+})
+
 onMounted(()=>{
   // Check Admin Token
   get('/admin/check_token').then(respond=>{
     if(respond.code === 200){
-      console.log('admin_token valid')
     }else{
-      console.log('admin_token invalid')
     }
   })
+  // Get Admin Info
+  get('/admin/info').then(respond=>{
+    if(respond.code === 200){
+      adminInfo.value = respond.data
+    }
+  })  
 })
 </script>
 
