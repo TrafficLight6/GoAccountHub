@@ -32,11 +32,11 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { User, Lock } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import { post } from '../../lib/request'
+import { post, get } from '../../lib/request'
 
 const router = useRouter()
 const loginFormRef = ref()
@@ -58,6 +58,16 @@ const rules = {
     { min: 0, max: 64, message: '密码长度不能超过 64 个字符', trigger: 'blur' },
   ],
 }
+
+// 已登录则直接跳转主页
+onMounted(async () => {
+  try {
+    await get('/admin/check_token', {}, { showError: false, autoRedirect401: false })
+    router.push('/main/home')
+  } catch {
+    // 未登录，留在登录页
+  }
+})
 
 const handleLogin = async () => {
   if (!loginFormRef.value) return
