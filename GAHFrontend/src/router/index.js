@@ -5,12 +5,18 @@ import Home from '../components/main/page/home.vue'
 import Admin from '../components/main/page/admin.vue'
 import User from '../components/main/page/user.vue'
 import Character from '../components/main/page/character.vue'
+import ComponentTest from '../components/component_test.vue'
 
 const routes = [
   {
     path: '/',
     name: 'Login',
     component: Login,
+  },
+  {
+    path: '/component',
+    name: 'ComponentTest',
+    component: () => import('../components/component_test.vue'),
   },
   {
     path: '/main',
