@@ -45,14 +45,14 @@
         </div>
     </el-card>
 
-    <AddDialogFrom v-model="dialogVisible" @submit="handleAddSubmit" />
-    <EditDialog v-model="editVisible" :user="editRow" @submit="handleEditSubmit" />
+    <AddUserDialogFrom v-model="dialogVisible" @submit="handleAddSubmit" />
+    <EditUserDialog v-model="editVisible" :user="editRow" @submit="handleEditSubmit" />
 </template>
 <script setup>
 import { post, put, del } from '.././../../lib/request.js'
 import rangeUser from '.././../../lib/rangeUser.js'
-import AddDialogFrom from '../../customize/AddDialogFrom.vue'
-import EditDialog from '../../customize/EditDialog.vue'
+import AddUserDialogFrom from '../../customize/AddUserDialogFrom.vue'
+import EditUserDialog from '../../customize/EditUserDialog.vue'
 import { h, ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElCheckbox, ElButton, ElIcon, ElMessage, ElMessageBox } from 'element-plus'
