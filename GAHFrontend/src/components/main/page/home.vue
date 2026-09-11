@@ -40,7 +40,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { CircleCheckFilled, CircleCloseFilled } from '@element-plus/icons-vue'
-import { get } from '../../../lib/request'
+import { post } from '../../../lib/request'
 
 // 从 document.cookie 字符串中解析 admin_name（接口未返回前的兜底显示）
 const adminName = ref('')
@@ -59,11 +59,11 @@ const hasPerm = (key) => {
 }
 
 onMounted(() => {
-  get('/info')
+  post('/info')
     .then(res => {
       appInfo.value = res.data
     })
-  get('/admin/info')
+  post('/admin/info')
     .then(res => {
       adminInfo.value = res.data
     })

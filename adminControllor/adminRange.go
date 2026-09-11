@@ -18,9 +18,16 @@ type AdminRangeRequestBody struct {
 
 type AdminSearchCondition struct {
 	//If The Field is Empty, It Means Ignore This Condition
-	Username     string `json:"username"`
-	PasswordHash string `json:"password_hash"`
-	UUHash       string `json:"uu_hash"`
+	Username string `json:"username"`
+	UUHash   string `json:"uu_hash"`
+
+	//Permission Filter (Bool, false means ignore)
+	CanAddAdmin         bool `json:"can_add_admin"`
+	CanDeleteAdmin      bool `json:"can_delete_admin"`
+	CanEditAdmin        bool `json:"can_edit_admin"`
+	CanGetAdmin         bool `json:"can_get_admin"`
+	CanOperateUser      bool `json:"can_operate_user"`
+	CanOperateCharacter bool `json:"can_operate_character"`
 }
 
 func AdminRange(c *gin.Context) {
@@ -57,18 +64,35 @@ func AdminRange(c *gin.Context) {
 		conditions = append(conditions, "username LIKE ?")
 		args = append(args, "%"+condition.Username+"%")
 	}
-	if condition.PasswordHash != "" {
-		conditions = append(conditions, "password_hash LIKE ?")
-		args = append(args, "%"+condition.PasswordHash+"%")
-	}
 	if condition.UUHash != "" {
 		conditions = append(conditions, "uu_hash LIKE ?")
 		args = append(args, "%"+condition.UUHash+"%")
+	}
+	//Permission Filter: only checked (true) fields are applied, all combined with AND
+	if condition.CanAddAdmin {
+		conditions = append(conditions, "permission ->> 'can_add_admin' = 'true'")
+	}
+	if condition.CanDeleteAdmin {
+		conditions = append(conditions, "permission ->> 'can_delete_admin' = 'true'")
+	}
+	if condition.CanEditAdmin {
+		conditions = append(conditions, "permission ->> 'can_edit_admin' = 'true'")
+	}
+	if condition.CanGetAdmin {
+		conditions = append(conditions, "permission ->> 'can_get_admin' = 'true'")
+	}
+	if condition.CanOperateUser {
+		conditions = append(conditions, "permission ->> 'can_operate_user' = 'true'")
+	}
+	if condition.CanOperateCharacter {
+		conditions = append(conditions, "permission ->> 'can_operate_character' = 'true'")
 	}
 	query := db.Model(&sqlTable.Admin{})
 	if len(conditions) > 0 {
 		query = query.Where(strings.Join(conditions, " AND "), args...)
 	}
+	//Must Be Ordered, Otherwise Limit/Offset Follows Physical Row Order And Pages Are Not Stable
+	query = query.Order("id ASC")
 	//Search
 	var admins []sqlTable.Admin
 	if isReturnAll {

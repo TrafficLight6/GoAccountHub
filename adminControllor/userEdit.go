@@ -26,12 +26,6 @@ func UserEdit(c *gin.Context) {
 	}
 	//Get Db
 	db := c.Value("db").(*gorm.DB)
-	//Check Username or Password is Empty
-	if body.Username == "" || body.Password == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"code": http.StatusBadRequest, "error": "Username or Password Is Empty"})
-		c.Abort()
-		return
-	}
 	//Check User Exist
 	var userOld sqlTable.User
 	if err := db.Where("uu_hash = ?", body.UUHash).First(&userOld).Error; err != nil {
@@ -39,7 +33,7 @@ func UserEdit(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	//Edit User
+	//Edit User (Empty Field Means Keep The Old Value)
 	userNew := userOld
 	if body.Username != "" {
 		userNew.Username = body.Username

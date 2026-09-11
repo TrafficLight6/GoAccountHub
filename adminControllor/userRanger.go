@@ -18,9 +18,8 @@ type UserRangeRequestBody struct {
 
 type UserSearchCondition struct {
 	//If The Field is Empty, It Means Ignore This Condition
-	Username     string `json:"username"`
-	PasswordHash string `json:"password_hash"`
-	UUHash       string `json:"uu_hash"`
+	Username string `json:"username"`
+	UUHash   string `json:"uu_hash"`
 }
 
 func UserRange(c *gin.Context) {
@@ -57,10 +56,6 @@ func UserRange(c *gin.Context) {
 		conditions = append(conditions, "username LIKE ?")
 		args = append(args, "%"+condition.Username+"%")
 	}
-	if condition.PasswordHash != "" {
-		conditions = append(conditions, "password_hash LIKE ?")
-		args = append(args, "%"+condition.PasswordHash+"%")
-	}
 	if condition.UUHash != "" {
 		conditions = append(conditions, "uu_hash LIKE ?")
 		args = append(args, "%"+condition.UUHash+"%")
@@ -69,6 +64,8 @@ func UserRange(c *gin.Context) {
 	if len(conditions) > 0 {
 		query = query.Where(strings.Join(conditions, " AND "), args...)
 	}
+	//Must Be Ordered, Otherwise Limit/Offset Follows Physical Row Order And Pages Are Not Stable
+	query = query.Order("id ASC")
 	//Search
 	var users []sqlTable.User
 	if isReturnAll {

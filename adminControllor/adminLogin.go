@@ -44,10 +44,10 @@ func AdminLogin(c *gin.Context) {
 		//Set cookie (must be before c.JSON, otherwise headers are already flushed)
 		//admin_token 保持 httpOnly（JS 不可读，防 XSS）；admin_name 仅用于前端展示，允许 JS 读取
 		if body.IsRemember {
-			c.SetCookie("admin_token", token, 30*24*60*60, "/", "", false, true)
+			c.SetCookie("admin_token", token, 30*24*60*60, "/", "", false, false)
 			c.SetCookie("admin_name", "root", 30*24*60*60, "/", "", false, false)
 		} else {
-			c.SetCookie("admin_token", token, 0, "/", "", false, true)
+			c.SetCookie("admin_token", token, 0, "/", "", false, false)
 			c.SetCookie("admin_name", "root", 0, "/", "", false, false)
 		}
 		c.JSON(http.StatusOK, gin.H{"code": http.StatusOK, "message": "login success", "token": token})
@@ -76,10 +76,10 @@ func AdminLogin(c *gin.Context) {
 	//Set cookie (must be before c.JSON, otherwise headers are already flushed)
 	//admin_token 保持 httpOnly（JS 不可读，防 XSS）；admin_name 仅用于前端展示，允许 JS 读取
 	if body.IsRemember {
-		c.SetCookie("admin_token", token, 30*24*60*60, "/", "", false, true)
+		c.SetCookie("admin_token", token, 30*24*60*60, "/", "", false, false)
 		c.SetCookie("admin_name", admin.Username, 30*24*60*60, "/", "", false, false)
 	} else {
-		c.SetCookie("admin_token", token, 0, "/", "", false, true)
+		c.SetCookie("admin_token", token, 0, "/", "", false, false)
 		c.SetCookie("admin_name", admin.Username, 0, "/", "", false, false)
 	}
 

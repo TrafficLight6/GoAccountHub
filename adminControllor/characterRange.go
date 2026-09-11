@@ -19,7 +19,6 @@ type CharacterRangeRequestBody struct {
 type CharacterSearchCondition struct {
 	//If The Field is Empty, It Means Ignore This Condition
 	CharacterName string `json:"character_name"`
-	PasswordHash  string `json:"password_hash"`
 	UserUUHash    string `json:"user_uu_hash"`
 	UUHash        string `json:"uu_hash"`
 }
@@ -52,10 +51,6 @@ func CharacterRange(c *gin.Context) {
 		conditions = append(conditions, "character_name LIKE ?")
 		args = append(args, "%"+condition.CharacterName+"%")
 	}
-	if condition.PasswordHash != "" {
-		conditions = append(conditions, "password_hash LIKE ?")
-		args = append(args, "%"+condition.PasswordHash+"%")
-	}
 	if condition.UserUUHash != "" {
 		conditions = append(conditions, "user_uu_hash LIKE ?")
 		args = append(args, "%"+condition.UserUUHash+"%")
@@ -68,6 +63,8 @@ func CharacterRange(c *gin.Context) {
 	if len(conditions) > 0 {
 		query = query.Where(strings.Join(conditions, " AND "), args...)
 	}
+	//Must Be Ordered, Otherwise Limit/Offset Follows Physical Row Order And Pages Are Not Stable
+	query = query.Order("id ASC")
 	//Search
 	var characters []sqlTable.Character
 	if isReturnAll {

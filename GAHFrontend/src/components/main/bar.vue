@@ -65,7 +65,8 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Odometer, Fold, Expand, User, SetUp, Grid } from '@element-plus/icons-vue'
-import { get, post, put, del } from '../../lib/request'
+import { post, put, del } from '../../lib/request'
+import VueCookies from 'vue-cookies'
 
 const route = useRoute()
 const router = useRouter()
@@ -83,8 +84,8 @@ const handleLogout = async () => {
     // 即使后端出错也继续清理并跳转
   }
   // 删除本地 cookie
-  document.cookie = 'admin_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
-  document.cookie = 'admin_name=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+  VueCookies.remove('admin_token')
+  VueCookies.remove('admin_name')
   router.push('/')
 }
 
@@ -110,13 +111,13 @@ const canGetCharacter = computed(() => {
 
 onMounted(()=>{
   // Check Admin Token
-  get('/admin/check_token').then(respond=>{
+  post('/admin/check_token').then(respond=>{
     if(respond.code === 200){
     }else{
     }
   })
   // Get Admin Info
-  get('/admin/info').then(respond=>{
+  post('/admin/info').then(respond=>{
     if(respond.code === 200){
       adminInfo.value = respond.data
     }
