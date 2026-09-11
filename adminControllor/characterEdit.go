@@ -48,6 +48,12 @@ func CharacterEdit(c *gin.Context) {
 		c.Abort()
 		return
 	}
+	//Check is Same Name Character
+	if user.UUHash == characterOld.UserUUHash {
+		c.JSON(http.StatusBadRequest, gin.H{"code": http.StatusBadRequest, "error": "Same Name Character Can Not Be Edited, Please Trun to User Edit Api"})
+		c.Abort()
+		return
+	}
 	//Update Character
 	characterNew := characterOld
 	if body.CharacterName != "" {
