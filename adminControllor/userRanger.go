@@ -64,6 +64,8 @@ func UserRange(c *gin.Context) {
 	if len(conditions) > 0 {
 		query = query.Where(strings.Join(conditions, " AND "), args...)
 	}
+	//Must Be Ordered, Otherwise Limit/Offset Follows Physical Row Order And Pages Are Not Stable
+	query = query.Order("id ASC")
 	//Search
 	var users []sqlTable.User
 	if isReturnAll {
