@@ -42,29 +42,35 @@ func ReturnRouter(config config.Config) (*gin.Engine, *gorm.DB) {
 		v1.POST("/admin/check_token", middleware.AdminCheckMiddleware(), checkControllor.CheckAdminToken)
 		//Admin Info
 		v1.POST("/admin/info", middleware.AdminCheckMiddleware(), adminControllor.AdminInfo)
+		//Admin Count
+		v1.POST("/admin/count", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_get_admin"), adminControllor.AdminCount)
 		//Admin Operation
 		v1.POST("/admin/add", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_add_admin"), adminControllor.AdminAdd)
 		v1.DELETE("/admin/delete", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_delete_admin"), adminControllor.AdminDelete)
 		v1.PUT("/admin/edit", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_edit_admin"), adminControllor.AdminEdit)
 		v1.POST("/admin/get", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_get_admin"), adminControllor.AdminGet)
-		v1.POST("/admin/range", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_get_admin_range"), adminControllor.AdminRange)
+		v1.POST("/admin/range", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_get_admin"), adminControllor.AdminRange)
 
+		//User Count
+		v1.POST("/user/count", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_user"), adminControllor.UserCount)
 		//User Api
 		v1.POST("/user/add", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_user"), adminControllor.UserAdd)
 		v1.DELETE("/user/delete", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_user"), adminControllor.UserDelete)
 		v1.PUT("/user/edit", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_user"), adminControllor.UserEdit)
 		v1.POST("/user/get", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_user"), adminControllor.UserGet)
-		v1.POST("/user/range", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_user_range"), adminControllor.UserRange)
+		v1.POST("/user/range", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_user"), adminControllor.UserRange)
 
 		//Character Api
 		//Check is Allowed to Use Multi Character Functions
 		v1.Use(middleware.ConfigBlocker("allow_multi_character"))
+		//Character Count
+		v1.POST("/character/count", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_character"), adminControllor.CharacterCount)
 		//Character Operation
 		v1.POST("/character/add", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_character"), adminControllor.CharacterAdd)
 		v1.DELETE("/character/delete", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_character"), adminControllor.CharacterDelete)
 		v1.PUT("/character/edit", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_character"), adminControllor.CharacterEdit)
 		v1.POST("/character/get", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_character"), adminControllor.CharacterGet)
-		v1.POST("/character/range", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_character_range"), adminControllor.CharacterRange)
+		v1.POST("/character/range", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_character"), adminControllor.CharacterRange)
 	}
 
 	{
