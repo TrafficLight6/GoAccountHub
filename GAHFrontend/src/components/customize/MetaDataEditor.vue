@@ -179,6 +179,13 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* 放在 flex 容器（如 el-form-item__content）里必须给确定宽度：
+   否则宽度由内容决定，而 monaco 会把自己量到的像素宽度写回 DOM，形成逐帧变宽的正反馈 */
+.meta-data-editor {
+    width: 100%;
+    min-width: 0;
+}
+
 /* 标签栏只用来切换高亮，编辑器是独立区域，收紧默认间距 */
 .meta-data-editor__tabs :deep(.el-tabs__header) {
     margin-bottom: 8px;
@@ -186,6 +193,8 @@ onBeforeUnmount(() => {
 
 .meta-data-editor__body {
     width: 100%;
+    /* 项目没有全局 box-sizing 重置，用 border-box 让 1px 边框不额外撑宽 */
+    box-sizing: border-box;
     overflow: hidden;
     border: 1px solid var(--el-border-color);
     border-radius: var(--el-border-radius-base);
