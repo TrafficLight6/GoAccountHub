@@ -62,7 +62,8 @@ import AddAdminDialogFrom from '../../customize/AddAdminDialogFrom.vue'
 import EditAdminDialogFrom from '../../customize/EditAdminDialogFrom.vue'
 import { h, ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElCheckbox, ElButton, ElMessage, ElMessageBox } from 'element-plus'
+import { ElCheckbox, ElButton, ElIcon, ElMessage, ElMessageBox } from 'element-plus'
+import { DocumentCopy } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const adminInfo = ref({})
@@ -253,6 +254,16 @@ const handleEditSubmit = async (form) => {
     }
 }
 
+// 复制文本到剪贴板
+const handleCopy = async (text) => {
+    try {
+        await navigator.clipboard.writeText(text)
+        ElMessage.success('已复制')
+    } catch {
+        ElMessage.error('复制失败')
+    }
+}
+
 const columns = [
     {
         key: 'selection',
@@ -270,7 +281,19 @@ const columns = [
     },
     { key: 'ID', dataKey: 'ID', title: 'ID', width: 70 },
     { key: 'Username', dataKey: 'Username', title: '用户名', width: 140 },
-    { key: 'UUHash', dataKey: 'UUHash', title: 'UUHash', width: 550 },
+    {
+        key: 'UUHash',
+        title: 'UUHash',
+        width: 600,
+        cellRenderer: ({ rowData }) => h('div', { style: 'display: flex; align-items: center; gap: 8px;' }, [
+            h('span', rowData.UUHash),
+            h(ElButton, {
+                size: 'small',
+                title: '复制 UUHash',
+                onClick: () => handleCopy(rowData.UUHash),
+            }, () => h(ElIcon, null, () => h(DocumentCopy))),
+        ]),
+    },
     { key: 'can_add_admin', title: '添加管理员', width: 110, cellRenderer: permCell('can_add_admin') },
     { key: 'can_delete_admin', title: '删除管理员', width: 110, cellRenderer: permCell('can_delete_admin') },
     { key: 'can_edit_admin', title: '修改管理员', width: 110, cellRenderer: permCell('can_edit_admin') },
