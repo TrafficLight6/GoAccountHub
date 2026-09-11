@@ -305,8 +305,8 @@ const columns = [
         title: '操作',
         width: 200,
         cellRenderer: ({ rowData }) => h('div', { style: 'display: flex; gap: 8px;' }, [
-            h(ElButton, { type: 'danger', size: 'small', onClick: () => handleDelete(rowData) }, () => '删除用户'),
-            h(ElButton, { type: 'primary', size: 'small', onClick: () => handleEdit(rowData) }, () => '编辑用户'),
+            h(ElButton, { type: 'danger', size: 'small', onClick: () => handleDelete(rowData) }, () => '删除管理员'),
+            h(ElButton, { type: 'primary', size: 'small', onClick: () => handleEdit(rowData) }, () => '编辑管理员'),
         ]),
     },
 ]
