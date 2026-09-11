@@ -3,23 +3,37 @@
         <template #header>
             操作
         </template>
-        <p><el-input placeholder="管理员用户名"></el-input></p>
-        <p><el-input placeholder="管理员UUHash"></el-input></p>
+        <p><el-input v-model="searchForm.username" placeholder="管理员用户名"></el-input></p>
+        <p><el-input v-model="searchForm.uu_hash" placeholder="管理员UUHash"></el-input></p>
         <p>权限筛选：</p>
-        <el-checkbox label="是否可以添加管理员"></el-checkbox>
-        <el-checkbox label="是否可以删除管理员"></el-checkbox>
-        <el-checkbox label="是否可以修改管理员"></el-checkbox>
-        <el-checkbox label="是否可以获取管理员列表"></el-checkbox>
-        <el-checkbox label="是否可以操作用户"></el-checkbox>
-        <el-checkbox label="是否可以操作角色"></el-checkbox>
+        <el-checkbox v-model="searchForm.permission.can_add_admin" label="是否可以添加管理员"></el-checkbox>
+        <el-checkbox v-model="searchForm.permission.can_delete_admin" label="是否可以删除管理员"></el-checkbox>
+        <el-checkbox v-model="searchForm.permission.can_edit_admin" label="是否可以修改管理员"></el-checkbox>
+        <el-checkbox v-model="searchForm.permission.can_get_admin" label="是否可以获取管理员列表"></el-checkbox>
+        <el-checkbox v-model="searchForm.permission.can_operate_user" label="是否可以操作用户"></el-checkbox>
+        <el-checkbox v-model="searchForm.permission.can_operate_character" label="是否可以操作角色"></el-checkbox>
         <template #footer>
             <div style="text-align: right">
                 <el-button type="primary" @click="handleSearch">查询</el-button>
+                <el-button type="warning" @click="handleReset">重置</el-button>
                 <el-button type="success" @click="handleAdd">添加管理员</el-button>
             </div>
         </template>
     </el-card>
     <br>
+    <template v-if="selectedIds.length > 0">
+        <el-card>
+            <template #header>
+                批量操作
+            </template>
+            <el-text type="primary" size="large" style="text-align: center">已选中 {{ selectedIds.length }} 条</el-text>
+            <p>
+                <el-button type="primary" @click="handleCheckboxCancel">取消选中</el-button>
+                <el-button type="danger" @click="handleDelete">删除选中管理员</el-button>
+            </p>
+        </el-card>
+        <br>
+    </template>
     <el-card>
         <template #header>
             管理员列表
@@ -27,22 +41,76 @@
         <div style="height: 600px">
             <el-auto-resizer>
                 <template #default="{ height, width }">
-                    <el-table-v2 :columns="columns" :data="adminList" :width="width" :height="height" fixed />
+                    <el-table-v2 :columns="columns" :data="displayList" :width="width" :height="height"
+                        :footer-height="allLoaded ? 32 : 0" fixed @end-reached="handleEndReached">
+                        <template #footer>
+                            <el-text type="success" v-if="allLoaded" size="large">已加载全部 {{ adminCount }} 条</el-text>
+                        </template>
+                    </el-table-v2>
                 </template>
             </el-auto-resizer>
         </div>
     </el-card>
+
+    <AddAdminDialogFrom v-model="dialogVisible" @submit="handleAddSubmit" />
+    <EditAdminDialogFrom v-model="editVisible" :admin="editRow" @submit="handleEditSubmit" />
 </template>
 <script setup>
 import { post } from '.././../../lib/request.js'
 import rangeAdmin from '.././../../lib/rangeAdmin.js'
-import { h, ref, computed, onMounted } from 'vue'
+import AddAdminDialogFrom from '../../customize/AddAdminDialogFrom.vue'
+import EditAdminDialogFrom from '../../customize/EditAdminDialogFrom.vue'
+import { h, ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElCheckbox, ElButton } from 'element-plus'
+import { ElCheckbox, ElButton, ElMessageBox } from 'element-plus'
 
 const router = useRouter()
 const adminInfo = ref({})
 const adminList = ref([])
+const adminCount = ref(0)
+
+const PAGE_SIZE = 100
+const loading = ref(false)
+
+// 筛选条件表单（仅作用于前端已加载数据）
+const searchForm = reactive({
+    username: '',
+    uu_hash: '',
+    permission: {
+        can_add_admin: false,
+        can_delete_admin: false,
+        can_edit_admin: false,
+        can_get_admin: false,
+        can_operate_user: false,
+        can_operate_character: false,
+    },
+})
+
+// 已应用的筛选条件，null 表示未筛选
+const appliedFilter = ref(null)
+
+// 表格实际展示的数据：未筛选时为全部已加载数据
+const displayList = computed(() => {
+    const filter = appliedFilter.value
+    if (!filter) return adminList.value
+
+    const perms = Object.keys(filter.permission).filter((key) => filter.permission[key])
+    return adminList.value.filter((row) => {
+        if (filter.username && !(row.Username ?? '').includes(filter.username)) return false
+        if (filter.uu_hash && !(row.UUHash ?? '').includes(filter.uu_hash)) return false
+        return perms.every((key) => row.Permission?.[key])
+    })
+})
+
+// 添加管理员弹窗
+const dialogVisible = ref(false)
+
+// 编辑管理员弹窗
+const editVisible = ref(false)
+const editRow = ref(null)
+
+// 已加载项数是否已等于总数
+const allLoaded = computed(() => adminCount.value > 0 && adminList.value.length >= adminCount.value)
 
 const canGetAdmin = computed(() => {
     if (adminInfo.value.is_root) return true
@@ -55,8 +123,9 @@ const permCell = (key) => ({ rowData }) => h('span', rowData.Permission?.[key] ?
 // 勾选状态：以行 ID 记录
 const selectedIds = ref([])
 const isSelected = (id) => selectedIds.value.includes(id)
+// 全选判定基于当前展示的数据（受筛选影响）
 const allSelected = computed(
-    () => adminList.value.length > 0 && selectedIds.value.length === adminList.value.length
+    () => displayList.value.length > 0 && displayList.value.every((row) => isSelected(row.ID))
 )
 
 const toggleRow = (id) => {
@@ -66,14 +135,67 @@ const toggleRow = (id) => {
 }
 
 const toggleAll = () => {
-    selectedIds.value = allSelected.value ? [] : adminList.value.map((item) => item.ID)
+    const shownIds = displayList.value.map((item) => item.ID)
+    selectedIds.value = allSelected.value
+        ? selectedIds.value.filter((id) => !shownIds.includes(id))
+        : [...new Set([...selectedIds.value, ...shownIds])]
 }
 
-// 行操作：待接入 /admin/delete 与 /admin/edit
+// 取消全部选中
+const handleCheckboxCancel = () => {
+    selectedIds.value = []
+}
+
+// 查询：仅在前端已加载数据中筛选
+const handleSearch = () => {
+    appliedFilter.value = {
+        username: searchForm.username.trim(),
+        uu_hash: searchForm.uu_hash.trim(),
+        permission: { ...searchForm.permission },
+    }
+}
+
+// 重置：清空筛选表单并取消已应用的筛选
+const handleReset = () => {
+    searchForm.username = ''
+    searchForm.uu_hash = ''
+    Object.keys(searchForm.permission).forEach((key) => {
+        searchForm.permission[key] = false
+    })
+    appliedFilter.value = null
+}
+
+// 打开添加管理员弹窗
+const handleAdd = () => {
+    dialogVisible.value = true
+}
+
+// 提交添加：待接入 /admin/add
+const handleAddSubmit = (form) => {
+}
+
+// 删除确认（暂不实现删除逻辑）
 const handleDelete = (row) => {
+    const target = row?.Username
+        ? `管理员\"${row.Username}\"`
+        : `选中的 ${selectedIds.value.length} 条管理员`
+    ElMessageBox.confirm(`确定删除${target}吗？`, '删除确认', {
+        type: 'warning',
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+    }).then(() => {
+        // 待接入 /admin/delete
+    }).catch(() => { })
 }
 
+// 打开编辑管理员弹窗
 const handleEdit = (row) => {
+    editRow.value = row
+    editVisible.value = true
+}
+
+// 提交编辑：待接入 /admin/edit
+const handleEditSubmit = (form) => {
 }
 
 const columns = [
@@ -83,10 +205,12 @@ const columns = [
         headerRenderer: () => h(ElCheckbox, {
             modelValue: allSelected.value,
             'onUpdate:modelValue': toggleAll,
+            size: 'large',
         }),
         cellRenderer: ({ rowData }) => h(ElCheckbox, {
             modelValue: isSelected(rowData.ID),
             'onUpdate:modelValue': () => toggleRow(rowData.ID),
+            size: 'large',
         }),
     },
     { key: 'ID', dataKey: 'ID', title: 'ID', width: 70 },
@@ -109,13 +233,23 @@ const columns = [
     },
 ]
 
-const range = async () => {
+const range = async (start = 1) => {
+    if (loading.value) return
+    loading.value = true
     try {
-        const list = await rangeAdmin({}, 1, 100)
-        adminList.value = list.sort((a, b) => a.ID - b.ID)
+        const list = await rangeAdmin({}, start, PAGE_SIZE)
+        adminList.value = [...adminList.value, ...list].sort((a, b) => a.ID - b.ID)
     } catch {
         // 401 已由 request 封装自动跳转登录页
+    } finally {
+        loading.value = false
     }
+}
+
+// 滚动到底部：未全部加载则继续请求下一页 100 行
+const handleEndReached = () => {
+    if (loading.value || allLoaded.value) return
+    range(Math.floor(adminList.value.length / PAGE_SIZE) + 1)
 }
 
 onMounted(async () => {
@@ -129,6 +263,12 @@ onMounted(async () => {
     if (!canGetAdmin.value) {
         router.push('/')
         return
+    }
+    try {
+        const res = await post('/admin/count')
+        adminCount.value = res.data.admin_count
+    } catch {
+        // 401 已由 request 封装自动跳转登录页，网络错误时不再继续鉴权
     }
     range()
 })
