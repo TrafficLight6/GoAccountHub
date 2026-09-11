@@ -41,10 +41,10 @@
         <div style="height: 600px">
             <el-auto-resizer>
                 <template #default="{ height, width }">
-                    <el-table-v2 :columns="columns" :data="displayList" :width="width" :height="height"
-                        :footer-height="allLoaded ? 32 : 0" fixed @end-reached="handleEndReached">
+                    <el-table-v2 :columns="columns" :data="adminList" :width="width" :height="height"
+                        :footer-height="noMore ? 32 : 0" fixed @end-reached="handleEndReached">
                         <template #footer>
-                            <el-text type="success" v-if="allLoaded" size="large">已加载全部 {{ adminCount }} 条</el-text>
+                            <el-text type="success" v-if="noMore" size="large">已加载全部 {{ adminList.length }} 条</el-text>
                         </template>
                     </el-table-v2>
                 </template>
@@ -67,12 +67,13 @@ import { ElCheckbox, ElButton, ElMessageBox } from 'element-plus'
 const router = useRouter()
 const adminInfo = ref({})
 const adminList = ref([])
-const adminCount = ref(0)
 
 const PAGE_SIZE = 100
 const loading = ref(false)
+// 后端是否已无更多数据
+const noMore = ref(false)
 
-// 筛选条件表单（仅作用于前端已加载数据）
+// 筛选条件表单（提交后由后端筛选）
 const searchForm = reactive({
     username: '',
     uu_hash: '',
@@ -86,21 +87,8 @@ const searchForm = reactive({
     },
 })
 
-// 已应用的筛选条件，null 表示未筛选
-const appliedFilter = ref(null)
-
-// 表格实际展示的数据：未筛选时为全部已加载数据
-const displayList = computed(() => {
-    const filter = appliedFilter.value
-    if (!filter) return adminList.value
-
-    const perms = Object.keys(filter.permission).filter((key) => filter.permission[key])
-    return adminList.value.filter((row) => {
-        if (filter.username && !(row.Username ?? '').includes(filter.username)) return false
-        if (filter.uu_hash && !(row.UUHash ?? '').includes(filter.uu_hash)) return false
-        return perms.every((key) => row.Permission?.[key])
-    })
-})
+// 当前生效的筛选条件，随每次 range 请求发给后端
+const searchCondition = ref({})
 
 // 添加管理员弹窗
 const dialogVisible = ref(false)
@@ -108,9 +96,6 @@ const dialogVisible = ref(false)
 // 编辑管理员弹窗
 const editVisible = ref(false)
 const editRow = ref(null)
-
-// 已加载项数是否已等于总数
-const allLoaded = computed(() => adminCount.value > 0 && adminList.value.length >= adminCount.value)
 
 const canGetAdmin = computed(() => {
     if (adminInfo.value.is_root) return true
@@ -123,9 +108,9 @@ const permCell = (key) => ({ rowData }) => h('span', rowData.Permission?.[key] ?
 // 勾选状态：以行 ID 记录
 const selectedIds = ref([])
 const isSelected = (id) => selectedIds.value.includes(id)
-// 全选判定基于当前展示的数据（受筛选影响）
+// 全选判定基于当前数据
 const allSelected = computed(
-    () => displayList.value.length > 0 && displayList.value.every((row) => isSelected(row.ID))
+    () => adminList.value.length > 0 && adminList.value.every((row) => isSelected(row.ID))
 )
 
 const toggleRow = (id) => {
@@ -135,7 +120,7 @@ const toggleRow = (id) => {
 }
 
 const toggleAll = () => {
-    const shownIds = displayList.value.map((item) => item.ID)
+    const shownIds = adminList.value.map((item) => item.ID)
     selectedIds.value = allSelected.value
         ? selectedIds.value.filter((id) => !shownIds.includes(id))
         : [...new Set([...selectedIds.value, ...shownIds])]
@@ -146,23 +131,30 @@ const handleCheckboxCancel = () => {
     selectedIds.value = []
 }
 
-// 查询：仅在前端已加载数据中筛选
+// 查询：把筛选条件交给后端，重新从第一页取
 const handleSearch = () => {
-    appliedFilter.value = {
+    searchCondition.value = {
         username: searchForm.username.trim(),
         uu_hash: searchForm.uu_hash.trim(),
-        permission: { ...searchForm.permission },
+        can_add_admin: searchForm.permission.can_add_admin,
+        can_delete_admin: searchForm.permission.can_delete_admin,
+        can_edit_admin: searchForm.permission.can_edit_admin,
+        can_get_admin: searchForm.permission.can_get_admin,
+        can_operate_user: searchForm.permission.can_operate_user,
+        can_operate_character: searchForm.permission.can_operate_character,
     }
+    range(1)
 }
 
-// 重置：清空筛选表单并取消已应用的筛选
+// 重置：清空筛选条件并重新从第一页取全部
 const handleReset = () => {
     searchForm.username = ''
     searchForm.uu_hash = ''
     Object.keys(searchForm.permission).forEach((key) => {
         searchForm.permission[key] = false
     })
-    appliedFilter.value = null
+    searchCondition.value = {}
+    range(1)
 }
 
 // 打开添加管理员弹窗
@@ -237,8 +229,10 @@ const range = async (start = 1) => {
     if (loading.value) return
     loading.value = true
     try {
-        const list = await rangeAdmin({}, start, PAGE_SIZE)
-        adminList.value = [...adminList.value, ...list].sort((a, b) => a.ID - b.ID)
+        const list = await rangeAdmin(searchCondition.value, start, PAGE_SIZE)
+        const merged = start === 1 ? list : [...adminList.value, ...list]
+        adminList.value = merged.sort((a, b) => a.ID - b.ID)
+        noMore.value = list.length < PAGE_SIZE
     } catch {
         // 401 已由 request 封装自动跳转登录页
     } finally {
@@ -246,9 +240,9 @@ const range = async (start = 1) => {
     }
 }
 
-// 滚动到底部：未全部加载则继续请求下一页 100 行
+// 滚动到底部：后端还有数据时继续请求下一页 100 行
 const handleEndReached = () => {
-    if (loading.value || allLoaded.value) return
+    if (loading.value || noMore.value) return
     range(Math.floor(adminList.value.length / PAGE_SIZE) + 1)
 }
 
@@ -263,12 +257,6 @@ onMounted(async () => {
     if (!canGetAdmin.value) {
         router.push('/')
         return
-    }
-    try {
-        const res = await post('/admin/count')
-        adminCount.value = res.data.admin_count
-    } catch {
-        // 401 已由 request 封装自动跳转登录页，网络错误时不再继续鉴权
     }
     range()
 })
