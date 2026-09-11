@@ -36,7 +36,7 @@ import { reactive, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { User, Lock } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import { post, get } from '../../lib/request'
+import { post } from '../../lib/request'
 
 const router = useRouter()
 const loginFormRef = ref()
@@ -62,7 +62,7 @@ const rules = {
 // 已登录则直接跳转主页
 onMounted(async () => {
   try {
-    await get('/admin/check_token', {}, { showError: false, autoRedirect401: false })
+    await post('/admin/check_token', {}, { showError: false, autoRedirect401: false })
     router.push('/main/home')
   } catch {
     // 未登录，留在登录页

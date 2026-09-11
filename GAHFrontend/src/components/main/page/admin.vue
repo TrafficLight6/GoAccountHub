@@ -13,8 +13,10 @@
         <el-checkbox label="是否可以操作用户"></el-checkbox>
         <el-checkbox label="是否可以操作角色"></el-checkbox>
         <template #footer>
-            <el-button type="primary" @click="handleSearch">查询</el-button>
-            <el-button type="success" @click="handleAdd">添加管理员</el-button>
+            <div style="text-align: right">
+                <el-button type="primary" @click="handleSearch">查询</el-button>
+                <el-button type="success" @click="handleAdd">添加管理员</el-button>
+            </div>
         </template>
     </el-card>
     <br>
@@ -27,12 +29,13 @@
     </el-card>
 </template>
 <script setup>
-import { get } from '.././../../lib/request.js'
+import { post } from '.././../../lib/request.js'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import VueCookies from 'vue-cookies'
 
 const router = useRouter()
-
+console.log(VueCookies.get('admin_token'))
 const adminInfo = ref({})
 
 const canGetAdmin = computed(() => {
@@ -42,7 +45,7 @@ const canGetAdmin = computed(() => {
 
 onMounted(async () => {
     try {
-        const res = await get('/admin/info')
+        const res = await post('/admin/info')
         adminInfo.value = res.data
     } catch {
         // 401 已由 request 封装自动跳转登录页，网络错误时不再继续鉴权

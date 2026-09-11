@@ -4,7 +4,7 @@
     </h2>
 </template>
 <script setup>
-import { get } from '.././../../lib/request.js'
+import { post } from '.././../../lib/request.js'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -19,7 +19,7 @@ const canGetUser = computed(() => {
 
 onMounted(async () => {
   try {
-    const res = await get('/admin/info')
+    const res = await post('/admin/info')
     adminInfo.value = res.data
   } catch {
     // 401 已由 request 封装自动跳转登录页，网络错误时不再继续鉴权
