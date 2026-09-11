@@ -29,7 +29,7 @@
             <el-text type="primary" size="large" style="text-align: center">已选中 {{ selectedIds.length }} 条</el-text>
             <p>
                 <el-button type="primary" @click="handleCheckboxCancel">取消选中</el-button>
-                <el-button type="danger" @click="handleDelete">删除选中管理员</el-button>
+                <el-button type="danger" @click="handleBatchDelete">删除选中管理员</el-button>
             </p>
         </el-card>
         <br>
@@ -42,7 +42,7 @@
             <el-auto-resizer>
                 <template #default="{ height, width }">
                     <el-table-v2 :columns="columns" :data="adminList" :width="width" :height="height"
-                        :footer-height="noMore ? 32 : 0" fixed @end-reached="handleEndReached">
+                        row-key="ID" :footer-height="noMore ? 32 : 0" fixed @end-reached="handleEndReached">
                         <template #footer>
                             <el-text type="success" v-if="noMore" size="large">已加载全部 {{ adminList.length }} 条</el-text>
                         </template>
@@ -56,13 +56,13 @@
     <EditAdminDialogFrom v-model="editVisible" :admin="editRow" @submit="handleEditSubmit" />
 </template>
 <script setup>
-import { post } from '.././../../lib/request.js'
+import { post, put, del } from '.././../../lib/request.js'
 import rangeAdmin from '.././../../lib/rangeAdmin.js'
 import AddAdminDialogFrom from '../../customize/AddAdminDialogFrom.vue'
 import EditAdminDialogFrom from '../../customize/EditAdminDialogFrom.vue'
 import { h, ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElCheckbox, ElButton, ElMessageBox } from 'element-plus'
+import { ElCheckbox, ElButton, ElMessage, ElMessageBox } from 'element-plus'
 
 const router = useRouter()
 const adminInfo = ref({})
@@ -162,22 +162,71 @@ const handleAdd = () => {
     dialogVisible.value = true
 }
 
-// 提交添加：待接入 /admin/add
-const handleAddSubmit = (form) => {
+// 提交添加：调用 /admin/add，成功后刷新列表
+const handleAddSubmit = async (form) => {
+    try {
+        await post('/admin/add', {
+            username: form.username.trim(),
+            password: form.password,
+            permission: { ...form.permission },
+        }, { autoRedirect401: false })
+        ElMessage.success('添加管理员成功')
+        dialogVisible.value = false
+        range(1)
+    } catch {
+        // 失败提示已由 request 封装统一弹出
+    }
 }
 
-// 删除确认（暂不实现删除逻辑）
-const handleDelete = (row) => {
-    const target = row?.Username
-        ? `管理员\"${row.Username}\"`
-        : `选中的 ${selectedIds.value.length} 条管理员`
-    ElMessageBox.confirm(`确定删除${target}吗？`, '删除确认', {
-        type: 'warning',
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-    }).then(() => {
-        // 待接入 /admin/delete
-    }).catch(() => { })
+// 执行删除并同步列表（后端每次只接收一个 uu_hash，故逐条调用）
+const deleteAdmins = async (rows) => {
+    const results = await Promise.allSettled(
+        rows.map((item) => del('/admin/delete', { uu_hash: item.UUHash }, { autoRedirect401: false, showError: false }))
+    )
+    const successIds = rows.filter((_, index) => results[index].status === 'fulfilled').map((item) => item.ID)
+    const failed = results.filter((result) => result.status === 'rejected')
+    // 成功的行取消勾选
+    selectedIds.value = selectedIds.value.filter((id) => !successIds.includes(id))
+    if (failed.length === 0) {
+        ElMessage.success(`删除成功，共 ${successIds.length} 条`)
+    } else if (successIds.length === 0) {
+        ElMessage.error(failed[0].reason?.message || '删除失败')
+    } else {
+        ElMessage.warning(`成功 ${successIds.length} 条，失败 ${failed.length} 条：${failed[0].reason?.message ?? '未知原因'}`)
+    }
+    if (successIds.length > 0) range(1)
+}
+
+// 单个删除：确认后删除该行
+const handleDelete = async (row) => {
+    try {
+        await ElMessageBox.confirm(`确定删除管理员"${row.Username}"吗？`, '删除确认', {
+            type: 'warning',
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+        })
+    } catch {
+        // 取消删除
+        return
+    }
+    deleteAdmins([row])
+}
+
+// 批量删除：确认后删除所有选中行
+const handleBatchDelete = async () => {
+    const rows = adminList.value.filter((item) => selectedIds.value.includes(item.ID))
+    if (rows.length === 0) return
+    try {
+        await ElMessageBox.confirm(`确定删除选中的 ${rows.length} 条管理员吗？`, '删除确认', {
+            type: 'warning',
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+        })
+    } catch {
+        // 取消删除
+        return
+    }
+    deleteAdmins(rows)
 }
 
 // 打开编辑管理员弹窗
@@ -186,8 +235,22 @@ const handleEdit = (row) => {
     editVisible.value = true
 }
 
-// 提交编辑：待接入 /admin/edit
-const handleEditSubmit = (form) => {
+// 提交编辑：调用 /admin/edit，成功后刷新列表
+const handleEditSubmit = async (form) => {
+    try {
+        await put('/admin/edit', {
+            uu_hash: form.uu_hash,
+            admin_info: {
+                password: form.admin_info.password,
+                permission: { ...form.admin_info.permission },
+            },
+        }, { autoRedirect401: false })
+        ElMessage.success('修改管理员成功')
+        editVisible.value = false
+        range(1)
+    } catch {
+        // 失败提示已由 request 封装统一弹出
+    }
 }
 
 const columns = [
