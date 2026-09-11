@@ -18,9 +18,8 @@ type UserRangeRequestBody struct {
 
 type UserSearchCondition struct {
 	//If The Field is Empty, It Means Ignore This Condition
-	Username     string `json:"username"`
-	PasswordHash string `json:"password_hash"`
-	UUHash       string `json:"uu_hash"`
+	Username string `json:"username"`
+	UUHash   string `json:"uu_hash"`
 }
 
 func UserRange(c *gin.Context) {
@@ -56,10 +55,6 @@ func UserRange(c *gin.Context) {
 	if condition.Username != "" {
 		conditions = append(conditions, "username LIKE ?")
 		args = append(args, "%"+condition.Username+"%")
-	}
-	if condition.PasswordHash != "" {
-		conditions = append(conditions, "password_hash LIKE ?")
-		args = append(args, "%"+condition.PasswordHash+"%")
 	}
 	if condition.UUHash != "" {
 		conditions = append(conditions, "uu_hash LIKE ?")
