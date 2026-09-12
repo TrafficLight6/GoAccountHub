@@ -41,7 +41,7 @@ func AddApplicationKeyAction() *cli.Command {
 				sqlDB.Close()
 			}()
 			var applicationKey sqlTable.ApplicationKey
-			applicationKey.ApplicationUsingSite = c.String("site")
+			applicationKey.ApplicationUser = c.String("site")
 			applicationKey.Key = hash.SHA256(c.String("site") + time.Now().String())
 			err := sqlOperator.AddApplicationKey(db, applicationKey)
 			if err != nil {
