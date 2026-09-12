@@ -89,4 +89,4 @@ Go Account Hub（简称 GAH）是一个用 Go 语言编写的用户中心，可�
         ```
         现在你可以通过 `http://localhost:<your_frontend_port>` 访问 GAH 前端。
 
-**__更多信息，请参阅 [`docs/api_zh-cn.md`](docs/api_zh-cn.md)。__**
+**__更多信息，请参阅 [`./docs`](./docs)。__**
