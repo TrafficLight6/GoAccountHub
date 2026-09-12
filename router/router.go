@@ -73,6 +73,7 @@ func ReturnRouter(config config.Config) (*gin.Engine, *gorm.DB) {
 		v1.POST("/character/range", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_character"), adminControllor.CharacterRange)
 		//Key Api
 		v1.POST("/key/add", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_app_key"), adminControllor.KeyAdd)
+		v1.DELETE("/key/delete", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_app_key"), adminControllor.KeyDelete)
 	}
 
 	{
