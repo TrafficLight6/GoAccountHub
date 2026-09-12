@@ -71,6 +71,8 @@ func ReturnRouter(config config.Config) (*gin.Engine, *gorm.DB) {
 		v1.PUT("/character/edit", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_character"), adminControllor.CharacterEdit)
 		v1.POST("/character/get", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_character"), adminControllor.CharacterGet)
 		v1.POST("/character/range", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_character"), adminControllor.CharacterRange)
+		//Key Api
+		v1.POST("/key/add", middleware.AdminCheckMiddleware(), middleware.AdminPermissionCheckMiddleware("can_operate_app_key"), adminControllor.KeyAdd)
 	}
 
 	{
