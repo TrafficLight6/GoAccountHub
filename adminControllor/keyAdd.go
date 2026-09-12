@@ -35,7 +35,7 @@ func KeyAdd(c *gin.Context) {
 	db := c.Value("db").(*gorm.DB)
 	//Check key user name is exist
 	var key sqlTable.ApplicationKey
-	if err := db.Where("name = ?", body.KeyUserName).First(&key).Error; err != nil {
+	if err := db.Where("key_user = ?", body.KeyUserName).First(&key).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"code": http.StatusBadRequest, "error": "Key user name is already exist"})
 		return
 	}
