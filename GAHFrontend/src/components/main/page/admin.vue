@@ -1,22 +1,22 @@
 <template>
     <el-card>
         <template #header>
-            操作
+            Actions
         </template>
-        <p><el-input v-model="searchForm.username" placeholder="管理员用户名"></el-input></p>
-        <p><el-input v-model="searchForm.uu_hash" placeholder="管理员UUHash"></el-input></p>
-        <p>权限筛选：</p>
-        <el-checkbox v-model="searchForm.permission.can_add_admin" label="是否可以添加管理员"></el-checkbox>
-        <el-checkbox v-model="searchForm.permission.can_delete_admin" label="是否可以删除管理员"></el-checkbox>
-        <el-checkbox v-model="searchForm.permission.can_edit_admin" label="是否可以修改管理员"></el-checkbox>
-        <el-checkbox v-model="searchForm.permission.can_get_admin" label="是否可以获取管理员列表"></el-checkbox>
-        <el-checkbox v-model="searchForm.permission.can_operate_user" label="是否可以操作用户"></el-checkbox>
-        <el-checkbox v-model="searchForm.permission.can_operate_character" label="是否可以操作角色"></el-checkbox>
+        <p><el-input v-model="searchForm.username" placeholder="Admin Username"></el-input></p>
+        <p><el-input v-model="searchForm.uu_hash" placeholder="Admin UUHash"></el-input></p>
+        <p>Permission Filter:</p>
+        <el-checkbox v-model="searchForm.permission.can_add_admin" label="Can add admin"></el-checkbox>
+        <el-checkbox v-model="searchForm.permission.can_delete_admin" label="Can delete admin"></el-checkbox>
+        <el-checkbox v-model="searchForm.permission.can_edit_admin" label="Can edit admin"></el-checkbox>
+        <el-checkbox v-model="searchForm.permission.can_get_admin" label="Can get admin list"></el-checkbox>
+        <el-checkbox v-model="searchForm.permission.can_operate_user" label="Can operate users"></el-checkbox>
+        <el-checkbox v-model="searchForm.permission.can_operate_character" label="Can operate characters"></el-checkbox>
         <template #footer>
             <div style="text-align: right">
-                <el-button type="primary" @click="handleSearch">查询</el-button>
-                <el-button type="warning" @click="handleReset">重置</el-button>
-                <el-button type="success" @click="handleAdd">添加管理员</el-button>
+                <el-button type="primary" @click="handleSearch">Search</el-button>
+                <el-button type="warning" @click="handleReset">Reset</el-button>
+                <el-button type="success" @click="handleAdd">Add Admin</el-button>
             </div>
         </template>
     </el-card>
@@ -24,19 +24,19 @@
     <template v-if="selectedIds.length > 0">
         <el-card>
             <template #header>
-                批量操作
+                Batch Actions
             </template>
-            <el-text type="primary" size="large" style="text-align: center">已选中 {{ selectedIds.length }} 条</el-text>
+            <el-text type="primary" size="large" style="text-align: center">Selected {{ selectedIds.length }} items</el-text>
             <p>
-                <el-button type="primary" @click="handleCheckboxCancel">取消选中</el-button>
-                <el-button type="danger" @click="handleBatchDelete">删除选中管理员</el-button>
+                <el-button type="primary" @click="handleCheckboxCancel">Clear Selection</el-button>
+                <el-button type="danger" @click="handleBatchDelete">Delete Selected Admins</el-button>
             </p>
         </el-card>
         <br>
     </template>
     <el-card>
         <template #header>
-            管理员列表
+            Admin List
         </template>
         <div style="height: 600px">
             <el-auto-resizer>
@@ -44,7 +44,7 @@
                     <el-table-v2 :columns="columns" :data="adminList" :width="width" :height="height"
                         row-key="ID" :footer-height="noMore ? 32 : 0" fixed @end-reached="handleEndReached">
                         <template #footer>
-                            <el-text type="success" v-if="noMore" size="large">已加载全部 {{ adminList.length }} 条</el-text>
+                            <el-text type="success" v-if="noMore" size="large">All {{ adminList.length }} loaded</el-text>
                         </template>
                     </el-table-v2>
                 </template>
@@ -71,10 +71,10 @@ const adminList = ref([])
 
 const PAGE_SIZE = 100
 const loading = ref(false)
-// 后端是否已无更多数据
+// Whether the backend has no more data
 const noMore = ref(false)
 
-// 筛选条件表单（提交后由后端筛选）
+// Filter form (filtered by the backend after submit)
 const searchForm = reactive({
     username: '',
     uu_hash: '',
@@ -88,13 +88,13 @@ const searchForm = reactive({
     },
 })
 
-// 当前生效的筛选条件，随每次 range 请求发给后端
+// Currently active filter, sent to the backend with each range request
 const searchCondition = ref({})
 
-// 添加管理员弹窗
+// Add admin dialog
 const dialogVisible = ref(false)
 
-// 编辑管理员弹窗
+// Edit admin dialog
 const editVisible = ref(false)
 const editRow = ref(null)
 
@@ -103,13 +103,13 @@ const canGetAdmin = computed(() => {
     return Boolean(adminInfo.value.permission?.can_get_admin)
 })
 
-// 权限列统一渲染：命中为“是”，否则“否”
-const permCell = (key) => ({ rowData }) => h('span', rowData.Permission?.[key] ? '是' : '否')
+// Unified permission cell rendering: "Yes" when granted, otherwise "No"
+const permCell = (key) => ({ rowData }) => h('span', rowData.Permission?.[key] ? 'Yes' : 'No')
 
-// 勾选状态：以行 ID 记录
+// Selection state: recorded by row ID
 const selectedIds = ref([])
 const isSelected = (id) => selectedIds.value.includes(id)
-// 全选判定基于当前数据
+// Select-all is based on the current data
 const allSelected = computed(
     () => adminList.value.length > 0 && adminList.value.every((row) => isSelected(row.ID))
 )
@@ -127,12 +127,12 @@ const toggleAll = () => {
         : [...new Set([...selectedIds.value, ...shownIds])]
 }
 
-// 取消全部选中
+// Clear all selections
 const handleCheckboxCancel = () => {
     selectedIds.value = []
 }
 
-// 查询：把筛选条件交给后端，重新从第一页取
+// Search: send the filter to the backend and refetch from the first page
 const handleSearch = () => {
     searchCondition.value = {
         username: searchForm.username.trim(),
@@ -147,7 +147,7 @@ const handleSearch = () => {
     range(1)
 }
 
-// 重置：清空筛选条件并重新从第一页取全部
+// Reset: clear the filter and refetch everything from the first page
 const handleReset = () => {
     searchForm.username = ''
     searchForm.uu_hash = ''
@@ -158,12 +158,12 @@ const handleReset = () => {
     range(1)
 }
 
-// 打开添加管理员弹窗
+// Open the add admin dialog
 const handleAdd = () => {
     dialogVisible.value = true
 }
 
-// 提交添加：调用 /admin/add，成功后刷新列表
+// Submit add: call /admin/add and refresh the list on success
 const handleAddSubmit = async (form) => {
     try {
         await post('/admin/add', {
@@ -171,72 +171,72 @@ const handleAddSubmit = async (form) => {
             password: form.password,
             permission: { ...form.permission },
         }, { autoRedirect401: false })
-        ElMessage.success('添加管理员成功')
+        ElMessage.success('Admin added successfully')
         dialogVisible.value = false
         range(1)
     } catch {
-        // 失败提示已由 request 封装统一弹出
+        // Failure messages are already shown by the request wrapper
     }
 }
 
-// 执行删除并同步列表（后端每次只接收一个 uu_hash，故逐条调用）
+// Perform deletion and sync the list (the backend accepts one uu_hash per request, so call one by one)
 const deleteAdmins = async (rows) => {
     const results = await Promise.allSettled(
         rows.map((item) => del('/admin/delete', { uu_hash: item.UUHash }, { autoRedirect401: false, showError: false }))
     )
     const successIds = rows.filter((_, index) => results[index].status === 'fulfilled').map((item) => item.ID)
     const failed = results.filter((result) => result.status === 'rejected')
-    // 成功的行取消勾选
+    // Deselect successfully deleted rows
     selectedIds.value = selectedIds.value.filter((id) => !successIds.includes(id))
     if (failed.length === 0) {
-        ElMessage.success(`删除成功，共 ${successIds.length} 条`)
+        ElMessage.success(`Deleted successfully, ${successIds.length} in total`)
     } else if (successIds.length === 0) {
-        ElMessage.error(failed[0].reason?.message || '删除失败')
+        ElMessage.error(failed[0].reason?.message || 'Delete failed')
     } else {
-        ElMessage.warning(`成功 ${successIds.length} 条，失败 ${failed.length} 条：${failed[0].reason?.message ?? '未知原因'}`)
+        ElMessage.warning(`Succeeded: ${successIds.length}, failed: ${failed.length}: ${failed[0].reason?.message ?? 'Unknown reason'}`)
     }
     if (successIds.length > 0) range(1)
 }
 
-// 单个删除：确认后删除该行
+// Single delete: confirm, then delete the row
 const handleDelete = async (row) => {
     try {
-        await ElMessageBox.confirm(`确定删除管理员"${row.Username}"吗？`, '删除确认', {
+        await ElMessageBox.confirm(`Are you sure you want to delete admin "${row.Username}"?`, 'Delete Confirmation', {
             type: 'warning',
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
+            confirmButtonText: 'Confirm',
+            cancelButtonText: 'Cancel',
         })
     } catch {
-        // 取消删除
+        // Deletion canceled
         return
     }
     deleteAdmins([row])
 }
 
-// 批量删除：确认后删除所有选中行
+// Batch delete: confirm, then delete all selected rows
 const handleBatchDelete = async () => {
     const rows = adminList.value.filter((item) => selectedIds.value.includes(item.ID))
     if (rows.length === 0) return
     try {
-        await ElMessageBox.confirm(`确定删除选中的 ${rows.length} 条管理员吗？`, '删除确认', {
+        await ElMessageBox.confirm(`Are you sure you want to delete the ${rows.length} selected admins?`, 'Delete Confirmation', {
             type: 'warning',
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
+            confirmButtonText: 'Confirm',
+            cancelButtonText: 'Cancel',
         })
     } catch {
-        // 取消删除
+        // Deletion canceled
         return
     }
     deleteAdmins(rows)
 }
 
-// 打开编辑管理员弹窗
+// Open the edit admin dialog
 const handleEdit = (row) => {
     editRow.value = row
     editVisible.value = true
 }
 
-// 提交编辑：调用 /admin/edit，成功后刷新列表
+// Submit edit: call /admin/edit and refresh the list on success
 const handleEditSubmit = async (form) => {
     try {
         await put('/admin/edit', {
@@ -246,21 +246,21 @@ const handleEditSubmit = async (form) => {
                 permission: { ...form.admin_info.permission },
             },
         }, { autoRedirect401: false })
-        ElMessage.success('修改管理员成功')
+        ElMessage.success('Admin updated successfully')
         editVisible.value = false
         range(1)
     } catch {
-        // 失败提示已由 request 封装统一弹出
+        // Failure messages are already shown by the request wrapper
     }
 }
 
-// 复制文本到剪贴板
+// Copy text to the clipboard
 const handleCopy = async (text) => {
     try {
         await navigator.clipboard.writeText(text)
-        ElMessage.success('已复制')
+        ElMessage.success('Copied')
     } catch {
-        ElMessage.error('复制失败')
+        ElMessage.error('Copy failed')
     }
 }
 
@@ -280,7 +280,7 @@ const columns = [
         }),
     },
     { key: 'ID', dataKey: 'ID', title: 'ID', width: 70 },
-    { key: 'Username', dataKey: 'Username', title: '用户名', width: 140 },
+    { key: 'Username', dataKey: 'Username', title: 'Username', width: 140 },
     {
         key: 'UUHash',
         title: 'UUHash',
@@ -289,24 +289,24 @@ const columns = [
             h('span', rowData.UUHash),
             h(ElButton, {
                 size: 'small',
-                title: '复制 UUHash',
+                title: 'Copy UUHash',
                 onClick: () => handleCopy(rowData.UUHash),
             }, () => h(ElIcon, null, () => h(DocumentCopy))),
         ]),
     },
-    { key: 'can_add_admin', title: '添加管理员', width: 110, cellRenderer: permCell('can_add_admin') },
-    { key: 'can_delete_admin', title: '删除管理员', width: 110, cellRenderer: permCell('can_delete_admin') },
-    { key: 'can_edit_admin', title: '修改管理员', width: 110, cellRenderer: permCell('can_edit_admin') },
-    { key: 'can_get_admin', title: '查看管理员', width: 110, cellRenderer: permCell('can_get_admin') },
-    { key: 'can_operate_user', title: '操作用户', width: 100, cellRenderer: permCell('can_operate_user') },
-    { key: 'can_operate_character', title: '操作角色', width: 100, cellRenderer: permCell('can_operate_character') },
+    { key: 'can_add_admin', title: 'Add Admin', width: 110, cellRenderer: permCell('can_add_admin') },
+    { key: 'can_delete_admin', title: 'Delete Admin', width: 110, cellRenderer: permCell('can_delete_admin') },
+    { key: 'can_edit_admin', title: 'Edit Admin', width: 110, cellRenderer: permCell('can_edit_admin') },
+    { key: 'can_get_admin', title: 'View Admin', width: 110, cellRenderer: permCell('can_get_admin') },
+    { key: 'can_operate_user', title: 'Operate Users', width: 100, cellRenderer: permCell('can_operate_user') },
+    { key: 'can_operate_character', title: 'Operate Characters', width: 100, cellRenderer: permCell('can_operate_character') },
     {
         key: 'actions',
-        title: '操作',
+        title: 'Actions',
         width: 200,
         cellRenderer: ({ rowData }) => h('div', { style: 'display: flex; gap: 8px;' }, [
-            h(ElButton, { type: 'danger', size: 'small', onClick: () => handleDelete(rowData) }, () => '删除管理员'),
-            h(ElButton, { type: 'primary', size: 'small', onClick: () => handleEdit(rowData) }, () => '编辑管理员'),
+            h(ElButton, { type: 'danger', size: 'small', onClick: () => handleDelete(rowData) }, () => 'Delete Admin'),
+            h(ElButton, { type: 'primary', size: 'small', onClick: () => handleEdit(rowData) }, () => 'Edit Admin'),
         ]),
     },
 ]
@@ -320,13 +320,13 @@ const range = async (start = 1) => {
         adminList.value = merged.sort((a, b) => a.ID - b.ID)
         noMore.value = list.length < PAGE_SIZE
     } catch {
-        // 401 已由 request 封装自动跳转登录页
+        // 401 already redirects to the login page via the request wrapper
     } finally {
         loading.value = false
     }
 }
 
-// 滚动到底部：后端还有数据时继续请求下一页 100 行
+// Scroll to bottom: keep requesting the next 100 rows while the backend has more data
 const handleEndReached = () => {
     if (loading.value || noMore.value) return
     range(Math.floor(adminList.value.length / PAGE_SIZE) + 1)
@@ -337,7 +337,7 @@ onMounted(async () => {
         const res = await post('/admin/info')
         adminInfo.value = res.data
     } catch {
-        // 401 已由 request 封装自动跳转登录页，网络错误时不再继续鉴权
+        // 401 already redirects to the login page via the request wrapper; stop auth check on network errors
         return
     }
     if (!canGetAdmin.value) {

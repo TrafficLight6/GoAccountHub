@@ -3,15 +3,15 @@ import { ElMessage } from 'element-plus'
 const BASE_URL = import.meta.env.VITE_API_BASE || '/api/v1'
 
 /**
- * 异步请求封装
+ * Async request wrapper
  * @param {Object} options
- * @param {string} options.url      接口路径（相对 BASE_URL，如 '/info'）
- * @param {string} [options.method] 请求方法，默认 GET
- * @param {Object} [options.params]  query 参数（GET）
- * @param {Object} [options.data]    请求体（POST/PUT/DELETE 自动 JSON 序列化）
- * @param {boolean} [options.showError=true] 失败时是否自动弹出错误提示
- * @param {boolean} [options.autoRedirect401=true] 401 时是否自动跳转登录页
- * @returns {Promise<Object>} resolve 后端完整响应体（{ code, data, ... }）
+ * @param {string} options.url      API path (relative to BASE_URL, e.g. '/info')
+ * @param {string} [options.method] HTTP method, defaults to GET
+ * @param {Object} [options.params]  query parameters (GET)
+ * @param {Object} [options.data]    request body (auto JSON-serialized for POST/PUT/DELETE)
+ * @param {boolean} [options.showError=true] whether to show an error message automatically on failure
+ * @param {boolean} [options.autoRedirect401=true] whether to redirect to the login page on 401
+ * @returns {Promise<Object>} resolves with the full backend response body ({ code, data, ... })
  */
 export async function request(options = {}) {
   const {
@@ -25,7 +25,7 @@ export async function request(options = {}) {
 
   if (!url) throw new Error('request: url is required')
 
-  // 拼接 query string
+  // Build the query string
   let fullUrl = BASE_URL + url
   if (params && Object.keys(params).length > 0) {
     const search = new URLSearchParams(
@@ -39,7 +39,7 @@ export async function request(options = {}) {
 
   const fetchOptions = {
     method: method.toUpperCase(),
-    // 携带 cookie（admin_token 等鉴权依赖）
+    // Include cookies (authentication such as admin_token relies on it)
     credentials: 'include',
     headers: {},
   }
@@ -53,29 +53,29 @@ export async function request(options = {}) {
   try {
     res = await fetch(fullUrl, fetchOptions)
   } catch (e) {
-    if (showError) ElMessage.error('网络请求失败，请检查网络连接')
+    if (showError) ElMessage.error('Network request failed, please check your network connection')
     throw e
   }
 
-  // 401 未登录/登录过期：跳回登录页
+  // 401 not logged in / session expired: redirect back to the login page
   if (res.status === 401 && autoRedirect401) {
-    if (showError) ElMessage.error('登录已过期，请重新登录')
+    if (showError) ElMessage.error('Session expired, please log in again')
     window.location.href = '/'
     throw new Error('Unauthorized')
   }
 
-  // 解析响应体（后端始终返回 JSON）
+  // Parse the response body (the backend always returns JSON)
   let body
   try {
     body = await res.json()
   } catch (e) {
-    if (showError) ElMessage.error('响应解析失败')
+    if (showError) ElMessage.error('Failed to parse response')
     throw new Error('Invalid JSON response')
   }
 
-  // 后端约定：code === 200 为成功
+  // Backend convention: code === 200 means success
   if (!res.ok || (body.code !== undefined && body.code !== 200)) {
-    const errMsg = body.error || body.message || `请求失败（${res.status}）`
+    const errMsg = body.error || body.message || `Request failed (${res.status})`
     if (showError) ElMessage.error(errMsg)
     const err = new Error(errMsg)
     err.code = body.code ?? res.status
