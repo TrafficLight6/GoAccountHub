@@ -32,6 +32,12 @@
           </el-icon>
           <template #title>Character Management</template>
         </el-menu-item>
+        <el-menu-item index="/main/key" v-if="canOperateKey">
+          <el-icon>
+            <Key />
+          </el-icon>
+          <template #title>Key Management</template>
+        </el-menu-item>
       </el-menu>
     </el-aside>
 
@@ -64,7 +70,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Odometer, Fold, Expand, User, SetUp, Grid } from '@element-plus/icons-vue'
+import { Odometer, Fold, Expand, User, SetUp, Grid, Key } from '@element-plus/icons-vue'
 import { post, put, del } from '../../lib/request'
 import VueCookies from 'vue-cookies'
 
@@ -107,6 +113,12 @@ const canGetUser = computed(() => {
 const canGetCharacter = computed(() => {
   if (adminInfo.value.is_root) return true
   return Boolean(adminInfo.value.permission?.can_get_character)
+})
+
+// Permission check: allow everything for root; read the permission field for normal admins; return false before data loads
+const canOperateKey = computed(() => {
+  if (adminInfo.value.is_root) return true
+  return Boolean(adminInfo.value.permission?.can_operate_app_key)
 })
 
 onMounted(()=>{

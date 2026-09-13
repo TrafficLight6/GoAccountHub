@@ -46,7 +46,13 @@ const routes = [
         name: 'Character',
         component: Character,
         meta: { title: 'Character Management' },
-           },
+      },
+      {
+        path: 'key',
+        name: 'Key',
+        component: () => import('../components/main/page/key.vue'),
+        meta: { title: 'Key Management' },
+      },
     ],
   },
 ]
