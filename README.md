@@ -14,8 +14,6 @@
 ## 🌐 Language
 [English](README.md) | [简体中文](README_zh-cn.md)
 
-> ⚠️ **Branch status:** this is the `dev-integration` branch, which makes the Web UI and the API server work as one (the built frontend is embedded into the Go binary). It is still under development — use `main` for the latest stable branch.
-
 ## 📖 Introduction
 
 GoAccountHub (GAH) is a user hub written in Go. It stores user metadata and supports multiple sub-users — called **characters** in this project — and comes with a Vue 3 management page plus an API for third-party applications. PostgreSQL is used as the database.
@@ -44,16 +42,23 @@ What it gives you:
 
 ## 🚀 Build
 
-**__Now it can only be installed by compiling. A docker-compose file is planned.__**
+**__If you download the binary directly, skip the following steps.__**
 
-The easiest way is the one-click script, which builds the frontend first, then compiles the backend with the frontend embedded:
+The build is driven by a magefile ([`build.go`](./build.go)). Install mage once — the version is taken from `go.mod`:
 
 ```bash
-./build.cmd          # Windows (cmd or double click)
-./build.sh           # Linux / macOS / Git Bash
+go install github.com/magefile/mage
 ```
 
-It prints the version from `GAHversion` and the final binary size, and stops with a clear message if any step fails.
+| Command | What it does |
+| --- | --- |
+| `mage frontend` | `npm ci` + `npm run build` inside `GAHFrontend`, producing `GAHFrontend/dist` |
+| `mage build` | native binary `gah` (Windows: `gah.exe`), embedding whatever is already in `GAHFrontend/dist` |
+| `mage all` | `frontend` then `build` — one-click build with the UI embedded |
+| `mage cross` | cross compiles windows / linux / darwin on amd64 and arm64 into `bin/` |
+| `mage allCross` | `frontend` then `cross` — release build with the UI embedded |
+
+A cross build writes `bin/GoAccountHub-<GAHversion>-<os>-<arch>[.exe]`, with the version read from `GAHversion`.
 
 Manual equivalent — **the order matters**:
 
@@ -179,7 +184,7 @@ GoAccountHub/
 ├── sqlTable/                   # GORM models
 ├── cliAction/                  # CLI commands (start / password / generate / generate-test)
 ├── GAHFrontend/                # Vue 3 + Vite management page
-├── build.cmd, build.sh         # one-click build scripts
+├── build.go                    # magefile: frontend / build / cross targets
 └── GAHversion                  # version file
 ```
 
@@ -190,11 +195,10 @@ GoAccountHub/
 
 ## 🏗️ Build & Release
 
-GitHub Actions (`.github/workflows/go.yml`) runs on pushes and pull requests to `main`:
+GitHub Actions (`.github/workflows/go.yml`) runs on pushes to `main` only:
 
-- **build** — `go build ./...` and `go test ./...`
-- **frontend-build** — `npm ci` + `npm run build`, uploaded as the `frontend-dist` artifact
-- **cross-build** — downloads that artifact into `GAHFrontend/dist`, then cross compiles for windows / linux / darwin on amd64 and arm64; each binary is uploaded as `GoAccountHub-<GAHversion>-<os>-<arch>`
+- **test** — `go test ./...`
+- **release** — installs mage, then runs `mage allcross`: the frontend is built once, then cross compiled for windows / linux / darwin on amd64 and arm64; all six binaries are uploaded as a single `GoAccountHub-<GAHversion>` artifact
 
 ## 📄 License
 

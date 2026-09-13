@@ -230,7 +230,7 @@ GoAccountHub password <your_password>
 
 # 3. 打开配置文件，填写数据库等参数（见上方「配置文件字段说明」）
 
-# 4. 先构建前端，再编译服务端（或直接执行 `build.cmd` / `build.sh`）
+# 4. 先构建前端，再编译服务端（或直接执行 `mage all`）
 cd GAHFrontend && npm ci && npm run build && cd ..
 go build -o GoAccountHub .
 
