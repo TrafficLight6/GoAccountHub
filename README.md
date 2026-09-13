@@ -20,16 +20,17 @@ Go Account Hub,or GAH,is a user Hub in Go language,which can storage metadata of
 This project need a PostgreSQL database to store.
 
 ## 🛠️ Installation & Start
-**__Now it only can be install compiling.We plan to add a docker-compose file in the future.__**
+**__Now it only can be install directly.We plan to add a docker-compose file in the future.__**
 
 - 📦 Install  
+        **__⚠️Attention: If you have downloaded the binary file,please turn to the next step.__**
         1. Clone the repository.  
         2. Install PostgreSQL database and Node.js.  
         3. Type `go mod tidy` in `./GoAccountHub` to install go dependencies.  
         4. Type `npm install` in `./GoAccountHub/GAHFrontend` to install vue dependencies.  
         5. Compile the Go project in `./GoAccountHub`.Type `go build` to compile the project.  
 - ▶️ Start  
-    **__⚠️Attention: Before start the api server,you MUST to launch the Api server.And ALSO make sure there is `.env` file in the frontend root directory.Because when Api server start,it will change the `.env` file according to the config.__**
+    **__⚠️Attention: Before start the Web server,you MUST to launch the Api server.And ALSO make sure there is `.env` file in the frontend root directory.Because when Api server start,it will change the `.env` file according to the config.__**
 
     + 🖥️ Api Server
         1. Type this command to generate the setting config (default config name is `config.json`)  
