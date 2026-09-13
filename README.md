@@ -28,7 +28,7 @@ This project need a PostgreSQL database to store.
         3. Type `go mod tidy` in `./GoAccountHub` to install go dependencies.  
         4. Type `npm install` in `./GoAccountHub/GAHFrontend` to install vue dependencies.  
         5. Compile the Go project in `./GoAccountHub`.Type `go build` to compile the project.  
-- ▶️ Start
+- ▶️ Start  
     **__⚠️Attention: Before start the api server,you MUST to launch the Api server.And ALSO make sure there is `.env` file in the frontend root directory.Because when Api server start,it will change the `.env` file according to the config.__**
 
     + 🖥️ Api Server
