@@ -67,3 +67,5 @@ dist-ssr
 !GAHFrontend/dist/
 GAHFrontend/dist/*
 !GAHFrontend/dist/.gitkeep
+
+./bin*
