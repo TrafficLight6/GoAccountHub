@@ -12,6 +12,7 @@
         <el-checkbox v-model="searchForm.permission.can_get_admin" label="Can get admin list"></el-checkbox>
         <el-checkbox v-model="searchForm.permission.can_operate_user" label="Can operate users"></el-checkbox>
         <el-checkbox v-model="searchForm.permission.can_operate_character" label="Can operate characters"></el-checkbox>
+        <el-checkbox v-model="searchForm.permission.can_operate_app_key" label="Can operate app key"></el-checkbox>
         <template #footer>
             <div style="text-align: right">
                 <el-button type="primary" @click="handleSearch">Search</el-button>
@@ -85,6 +86,7 @@ const searchForm = reactive({
         can_get_admin: false,
         can_operate_user: false,
         can_operate_character: false,
+        can_operate_app_key: false,
     },
 })
 
@@ -143,6 +145,7 @@ const handleSearch = () => {
         can_get_admin: searchForm.permission.can_get_admin,
         can_operate_user: searchForm.permission.can_operate_user,
         can_operate_character: searchForm.permission.can_operate_character,
+        can_operate_app_key: searchForm.permission.can_operate_app_key,
     }
     range(1)
 }
@@ -300,6 +303,7 @@ const columns = [
     { key: 'can_get_admin', title: 'View Admin', width: 110, cellRenderer: permCell('can_get_admin') },
     { key: 'can_operate_user', title: 'Operate Users', width: 100, cellRenderer: permCell('can_operate_user') },
     { key: 'can_operate_character', title: 'Operate Characters', width: 100, cellRenderer: permCell('can_operate_character') },
+    { key: 'can_operate_app_key', title: 'Operate App Key', width: 110, cellRenderer: permCell('can_operate_app_key') },
     {
         key: 'actions',
         title: 'Actions',
