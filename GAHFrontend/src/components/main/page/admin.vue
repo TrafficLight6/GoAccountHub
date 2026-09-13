@@ -284,9 +284,9 @@ const columns = [
     {
         key: 'UUHash',
         title: 'UUHash',
-        width: 600,
-        cellRenderer: ({ rowData }) => h('div', { style: 'display: flex; align-items: center; gap: 8px;' }, [
-            h('span', rowData.UUHash),
+        width: 300,
+        cellRenderer: ({ rowData }) => h('div', { style: 'display: flex; align-items: center; gap: 8px; min-width: 0;' }, [
+            h('span', { style: 'flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;' }, rowData.UUHash),
             h(ElButton, {
                 size: 'small',
                 title: 'Copy UUHash',
