@@ -3,13 +3,12 @@
         <template #header>
             Actions
         </template>
-        <p><el-input v-model="searchForm.username" placeholder="Username"></el-input></p>
-        <p><el-input v-model="searchForm.uu_hash" placeholder="User UUHash"></el-input></p>
+        <p><el-input v-model="searchForm.key_user" placeholder="Key User Name"></el-input></p>
         <template #footer>
             <div style="text-align: right">
                 <el-button type="primary" @click="handleSearch">Search</el-button>
                 <el-button type="warning" @click="handleReset">Reset</el-button>
-                <el-button type="success" @click="handleAdd">Add User</el-button>
+                <el-button type="success" @click="handleAdd">Add Key</el-button>
             </div>
         </template>
     </el-card>
@@ -22,22 +21,22 @@
             <el-text type="primary" size="large" style="text-align: center">Selected {{ selectedIds.length }} items</el-text>
             <p>
                 <el-button type="primary" @click="handleCheckboxCancel">Clear Selection</el-button>
-                <el-button type="danger" @click="handleBatchDelete">Delete Selected Users</el-button>
+                <el-button type="danger" @click="handleBatchDelete">Delete Selected Keys</el-button>
             </p>
         </el-card>
         <br>
     </template>
     <el-card>
         <template #header>
-            User List ({{ userCount }} total)
+            Key List
         </template>
         <div style="height: 600px">
             <el-auto-resizer>
                 <template #default="{ height, width }">
-                    <el-table-v2 :columns="columns" :data="userList" :width="width" :height="height"
+                    <el-table-v2 :columns="columns" :data="keyList" :width="width" :height="height"
                         row-key="ID" :footer-height="noMore ? 32 : 0" fixed @end-reached="handleEndReached">
                         <template #footer>
-                            <el-text type="success" v-if="noMore" size="large">All {{ userList.length }} loaded</el-text>
+                            <el-text type="success" v-if="noMore" size="large">All {{ keyList.length }} loaded</el-text>
                         </template>
                     </el-table-v2>
                 </template>
@@ -45,24 +44,21 @@
         </div>
     </el-card>
 
-    <AddUserDialogFrom v-model="dialogVisible" @submit="handleAddSubmit" />
-    <EditUserDialog v-model="editVisible" :user="editRow" @submit="handleEditSubmit" />
+    <AddKeyDialogFrom v-model="addVisible" @submit="handleAddSubmit" />
+    <ShowKeyDialog v-model="showVisible" :app-key="newKey" />
 </template>
 <script setup>
-import { post, put, del } from '.././../../lib/request.js'
-import rangeUser from '.././../../lib/rangeUser.js'
-import AddUserDialogFrom from '../../customize/AddUserDialogFrom.vue'
-import EditUserDialog from '../../customize/EditUserDialog.vue'
+import { post, del } from '../../../lib/request.js'
+import rangeKey from '../../../lib/rangeKey.js'
+import AddKeyDialogFrom from '../../customize/AddKeyDialogFrom.vue'
+import ShowKeyDialog from '../../customize/ShowKeyDialog.vue'
 import { h, ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElCheckbox, ElButton, ElIcon, ElMessage, ElMessageBox } from 'element-plus'
-import { DocumentCopy } from '@element-plus/icons-vue'
+import { ElCheckbox, ElButton, ElMessage, ElMessageBox } from 'element-plus'
 
 const router = useRouter()
 const adminInfo = ref({})
-const userList = ref([])
-// Total user count (/user/count)
-const userCount = ref(0)
+const keyList = ref([])
 
 const PAGE_SIZE = 100
 const loading = ref(false)
@@ -71,23 +67,23 @@ const noMore = ref(false)
 
 // Search condition form (filtered by the backend after submit)
 const searchForm = reactive({
-    username: '',
-    uu_hash: '',
+    key_user: '',
 })
 
 // Currently active search conditions, sent to the backend with every range request
 const searchCondition = ref({})
 
-// Add user dialog
-const dialogVisible = ref(false)
+// Add key dialog
+const addVisible = ref(false)
 
-// Edit user dialog
-const editVisible = ref(false)
-const editRow = ref(null)
+// The key returned by /key/add, shown only once
+const showVisible = ref(false)
+const newKey = ref('')
 
-const canGetUser = computed(() => {
+// Permission check: root is always allowed; regular admins read the permission field; returns false while data is not loaded
+const canOperateAppKey = computed(() => {
     if (adminInfo.value.is_root) return true
-    return Boolean(adminInfo.value.permission?.can_operate_user)
+    return Boolean(adminInfo.value.permission?.can_operate_app_key)
 })
 
 // Selection state: tracked by row ID
@@ -95,7 +91,7 @@ const selectedIds = ref([])
 const isSelected = (id) => selectedIds.value.includes(id)
 // Select-all check is based on the current data
 const allSelected = computed(
-    () => userList.value.length > 0 && userList.value.every((row) => isSelected(row.ID))
+    () => keyList.value.length > 0 && keyList.value.every((row) => isSelected(row.ID))
 )
 
 const toggleRow = (id) => {
@@ -105,7 +101,7 @@ const toggleRow = (id) => {
 }
 
 const toggleAll = () => {
-    const shownIds = userList.value.map((item) => item.ID)
+    const shownIds = keyList.value.map((item) => item.ID)
     selectedIds.value = allSelected.value
         ? selectedIds.value.filter((id) => !shownIds.includes(id))
         : [...new Set([...selectedIds.value, ...shownIds])]
@@ -119,46 +115,42 @@ const handleCheckboxCancel = () => {
 // Search: hand the conditions to the backend and re-fetch from the first page
 const handleSearch = () => {
     searchCondition.value = {
-        username: searchForm.username.trim(),
-        uu_hash: searchForm.uu_hash.trim(),
+        key_user: searchForm.key_user.trim(),
     }
     range(1)
 }
 
 // Reset: clear the conditions and re-fetch everything from the first page
 const handleReset = () => {
-    searchForm.username = ''
-    searchForm.uu_hash = ''
+    searchForm.key_user = ''
     searchCondition.value = {}
     range(1)
 }
 
-// Open the add user dialog
+// Open the add key dialog
 const handleAdd = () => {
-    dialogVisible.value = true
+    addVisible.value = true
 }
 
-// Submit add: call /user/add, then refresh the list on success
+// Submit add: call /key/add, then show the new key once and refresh the list
 const handleAddSubmit = async (form) => {
     try {
-        await post('/user/add', {
-            username: form.username.trim(),
-            password: form.password,
-            meta_data: form.meta_data,
+        const res = await post('/key/add', {
+            key_user_name: form.key_user_name.trim(),
         }, { autoRedirect401: false })
-        ElMessage.success('User added')
-        dialogVisible.value = false
+        newKey.value = res.key
+        addVisible.value = false
+        showVisible.value = true
         refresh()
-        fetchCount()
     } catch {
         // Error messages are already shown by the request wrapper
     }
 }
 
-// Delete and sync the list (the backend accepts only one uu_hash at a time, so call it row by row)
-const deleteUsers = async (rows) => {
+// Delete and sync the list (the backend accepts only one key_user_name at a time, so call it row by row)
+const deleteKeys = async (rows) => {
     const results = await Promise.allSettled(
-        rows.map((item) => del('/user/delete', { uu_hash: item.UUHash }, { autoRedirect401: false, showError: false }))
+        rows.map((item) => del('/key/delete', { key_user_name: item.KeyUser }, { autoRedirect401: false, showError: false }))
     )
     const successIds = rows.filter((_, index) => results[index].status === 'fulfilled').map((item) => item.ID)
     const failed = results.filter((result) => result.status === 'rejected')
@@ -171,16 +163,13 @@ const deleteUsers = async (rows) => {
     } else {
         ElMessage.warning(`Succeeded ${successIds.length}, failed ${failed.length}: ${failed[0].reason?.message ?? 'Unknown reason'}`)
     }
-    if (successIds.length > 0) {
-        refresh()
-        fetchCount()
-    }
+    if (successIds.length > 0) refresh()
 }
 
 // Single delete: delete the row after confirmation
 const handleDelete = async (row) => {
     try {
-        await ElMessageBox.confirm(`Delete user "${row.Username}"?`, 'Delete Confirmation', {
+        await ElMessageBox.confirm(`Delete key "${row.KeyUser}"?`, 'Delete Confirmation', {
             type: 'warning',
             confirmButtonText: 'Confirm',
             cancelButtonText: 'Cancel',
@@ -189,15 +178,15 @@ const handleDelete = async (row) => {
         // Delete cancelled
         return
     }
-    deleteUsers([row])
+    deleteKeys([row])
 }
 
 // Batch delete: delete all selected rows after confirmation
 const handleBatchDelete = async () => {
-    const rows = userList.value.filter((item) => selectedIds.value.includes(item.ID))
+    const rows = keyList.value.filter((item) => selectedIds.value.includes(item.ID))
     if (rows.length === 0) return
     try {
-        await ElMessageBox.confirm(`Delete ${rows.length} selected users?`, 'Delete Confirmation', {
+        await ElMessageBox.confirm(`Delete ${rows.length} selected keys?`, 'Delete Confirmation', {
             type: 'warning',
             confirmButtonText: 'Confirm',
             cancelButtonText: 'Cancel',
@@ -206,47 +195,12 @@ const handleBatchDelete = async () => {
         // Delete cancelled
         return
     }
-    deleteUsers(rows)
+    deleteKeys(rows)
 }
 
-// Open the edit user dialog
-const handleEdit = (row) => {
-    editRow.value = row
-    editVisible.value = true
-}
-
-// Submit edit: call /user/edit, then refresh the list on success
-const handleEditSubmit = async (form) => {
-    try {
-        await put('/user/edit', {
-            uu_hash: form.uu_hash,
-            username: form.username.trim(),
-            password: form.password,
-            meta_data: form.meta_data,
-        }, { autoRedirect401: false })
-        ElMessage.success('User updated')
-        editVisible.value = false
-        refresh()
-    } catch {
-        // Error messages are already shown by the request wrapper
-    }
-}
-
-// Copy text to the clipboard
-const handleCopy = async (text) => {
-    try {
-        await navigator.clipboard.writeText(text)
-        ElMessage.success('Copied')
-    } catch {
-        ElMessage.error('Copy failed')
-    }
-}
-
-// MetaData can be long; truncate it in the cell and show the full text on hover
-const metaDataCell = ({ rowData }) => h('span', {
-    style: 'display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;',
-    title: rowData.MetaData ?? '',
-}, rowData.MetaData ?? '')
+// Key creation time
+const createdAtCell = ({ rowData }) =>
+    h('span', rowData.CreatedAt ? new Date(rowData.CreatedAt).toLocaleString() : '')
 
 const columns = [
     {
@@ -264,28 +218,15 @@ const columns = [
         }),
     },
     { key: 'ID', dataKey: 'ID', title: 'ID', width: 70 },
-    { key: 'Username', dataKey: 'Username', title: 'Username', width: 140 },
-    {
-        key: 'UUHash',
-        title: 'UUHash',
-        width: 600,
-        cellRenderer: ({ rowData }) => h('div', { style: 'display: flex; align-items: center; gap: 8px;' }, [
-            h('span', rowData.UUHash),
-            h(ElButton, {
-                size: 'small',
-                title: 'Copy UUHash',
-                onClick: () => handleCopy(rowData.UUHash),
-            }, () => h(ElIcon, null, () => h(DocumentCopy))),
-        ]),
-    },
-    { key: 'MetaData', title: 'MetaData', width: 300, cellRenderer: metaDataCell },
+    { key: 'KeyUser', dataKey: 'KeyUser', title: 'Key User Name', width: 240 },
+    { key: 'Key', dataKey: 'Key', title: 'Key', width: 300 },
+    { key: 'CreatedAt', title: 'Created At', width: 200, cellRenderer: createdAtCell },
     {
         key: 'actions',
         title: 'Actions',
-        width: 200,
+        width: 150,
         cellRenderer: ({ rowData }) => h('div', { style: 'display: flex; gap: 8px;' }, [
-            h(ElButton, { type: 'danger', size: 'small', onClick: () => handleDelete(rowData) }, () => 'Delete User'),
-            h(ElButton, { type: 'primary', size: 'small', onClick: () => handleEdit(rowData) }, () => 'Edit User'),
+            h(ElButton, { type: 'danger', size: 'small', onClick: () => handleDelete(rowData) }, () => 'Delete Key'),
         ]),
     },
 ]
@@ -294,13 +235,13 @@ const range = async (start = 1) => {
     if (loading.value) return
     loading.value = true
     try {
-        const list = await rangeUser(searchCondition.value, start, PAGE_SIZE)
+        const list = await rangeKey(searchCondition.value, start, PAGE_SIZE)
         // When scrolling further after refresh(), the requested page may overlap with already loaded data, so dedupe by ID
         const map = new Map()
-        for (const row of start === 1 ? list : [...userList.value, ...list]) {
+        for (const row of start === 1 ? list : [...keyList.value, ...list]) {
             map.set(row.ID, row)
         }
-        userList.value = [...map.values()].sort((a, b) => a.ID - b.ID)
+        keyList.value = [...map.values()].sort((a, b) => a.ID - b.ID)
         noMore.value = list.length < PAGE_SIZE
     } catch {
         // 401 is already handled by the request wrapper, which redirects to the login page
@@ -309,15 +250,15 @@ const range = async (start = 1) => {
     }
 }
 
-// Refresh after add/edit/delete: re-fetch based on the currently loaded row count.
-// Fetching only the first page would drop already loaded rows, making the affected row appear to "disappear"
+// Refresh after add/delete: re-fetch based on the currently loaded row count.
+// Fetching only the first page would drop already loaded rows
 const refresh = async () => {
     if (loading.value) return
     loading.value = true
     try {
-        const length = Math.max(PAGE_SIZE, userList.value.length)
-        const list = await rangeUser(searchCondition.value, 1, length)
-        userList.value = list.sort((a, b) => a.ID - b.ID)
+        const length = Math.max(PAGE_SIZE, keyList.value.length)
+        const list = await rangeKey(searchCondition.value, 1, length)
+        keyList.value = list.sort((a, b) => a.ID - b.ID)
         noMore.value = list.length < length
     } catch {
         // 401 is already handled by the request wrapper, which redirects to the login page
@@ -329,17 +270,7 @@ const refresh = async () => {
 // Reached the bottom: keep requesting the next 100 rows while the backend has more data
 const handleEndReached = () => {
     if (loading.value || noMore.value) return
-    range(Math.floor(userList.value.length / PAGE_SIZE) + 1)
-}
-
-// Total user count
-const fetchCount = async () => {
-    try {
-        const res = await post('/user/count')
-        userCount.value = res.data.user_count
-    } catch {
-        // 401 is already handled by the request wrapper, which redirects to the login page
-    }
+    range(Math.floor(keyList.value.length / PAGE_SIZE) + 1)
 }
 
 onMounted(async () => {
@@ -350,11 +281,10 @@ onMounted(async () => {
         // 401 is already handled by the request wrapper, which redirects to the login page; skip further checks on network errors
         return
     }
-    if (!canGetUser.value) {
-        router.push('/')
+    if (!canOperateAppKey.value) {
+        router.push('/main/home')
         return
     }
     range()
-    fetchCount()
 })
 </script>

@@ -4,7 +4,8 @@ import "gorm.io/gorm"
 
 type ApplicationKey struct {
 	gorm.Model
-	ID                   int64  `gorm:"primaryKey"`
-	ApplicationUsingSite string `gorm:"column:application_using_site"`
-	Key                  string `gorm:"column:key"`
+	ID int64 `gorm:"primaryKey"`
+	//UNIQUE
+	KeyUser string `gorm:"column:key_user"`
+	Key     string `gorm:"column:key"`
 }

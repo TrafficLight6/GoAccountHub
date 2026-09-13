@@ -28,6 +28,7 @@ type AdminSearchCondition struct {
 	CanGetAdmin         bool `json:"can_get_admin"`
 	CanOperateUser      bool `json:"can_operate_user"`
 	CanOperateCharacter bool `json:"can_operate_character"`
+	CanOperateAppKey    bool `json:"can_operate_app_key"`
 }
 
 func AdminRange(c *gin.Context) {
@@ -86,6 +87,9 @@ func AdminRange(c *gin.Context) {
 	}
 	if condition.CanOperateCharacter {
 		conditions = append(conditions, "permission ->> 'can_operate_character' = 'true'")
+	}
+	if condition.CanOperateAppKey {
+		conditions = append(conditions, "permission ->> 'can_operate_app_key' = 'true'")
 	}
 	query := db.Model(&sqlTable.Admin{})
 	if len(conditions) > 0 {

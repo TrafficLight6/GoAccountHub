@@ -52,7 +52,8 @@
   "can_edit_admin": false,
   "can_get_admin": false,
   "can_operate_user": false,
-  "can_operate_character": false
+  "can_operate_character": false,
+  "can_operate_app_key": false
 }
 ```
 
@@ -68,6 +69,7 @@
 | `can_edit_admin` | `PUT /admin/edit` |
 | `can_operate_user` | 所有 `/api/v1/user/*` 管理员端点 |
 | `can_operate_character` | 所有 `/api/v1/character/*` 管理员端点 |
+| `can_operate_app_key` | 所有 `/api/v1/key/*` 管理员端点 |
 
 ## 📋 快速参考
 
@@ -97,6 +99,9 @@
 | `PUT` | `/api/v1/character/edit` | ✅ `admin_token` | `can_operate_character` + 多角色开关 |
 | `POST` | `/api/v1/character/get` | ✅ `admin_token` | `can_operate_character` + 多角色开关 |
 | `POST` | `/api/v1/character/range` | ✅ `admin_token` | `can_operate_character` + 多角色开关 |
+| `POST` | `/api/v1/key/add` | ✅ `admin_token` | `can_operate_app_key` |
+| `POST` | `/api/v1/key/range` | ✅ `admin_token` | `can_operate_app_key` |
+| `DELETE` | `/api/v1/key/delete` | ✅ `admin_token` | `can_operate_app_key` |
 | `POST` | `/api/v1/app/user/login` | ✅ `app_key` | — |
 | `DELETE` | `/api/v1/app/user/logout` | ✅ `app_key` | — |
 | `POST` | `/api/v1/app/user/add` | ✅ `app_key` | — |
@@ -196,6 +201,7 @@
   "data": {
     "user_count": 10,
     "character_count": 25,
+    "key_count": 4,
     "total_token_count": 7,
     "user_token_count": 5,
     "admin_token_count": 2,
@@ -399,6 +405,7 @@
 | `can_get_admin` | bool | 同上 |
 | `can_operate_user` | bool | 同上 |
 | `can_operate_character` | bool | 同上 |
+| `can_operate_app_key` | bool | 同上 |
 
 ```json
 {
@@ -659,6 +666,98 @@
 ```json
 { "code": 200, "message": "Success", "data": [ { "ID": 5, "CharacterName": "bob_alt" } ] }
 ```
+
+### 🔑 密钥管理
+
+应用密钥是第三方应用作为 `app_key` Cookie 发送的凭据（见 [Cookie 与鉴权模型](#-cookie-与鉴权模型)）。`key_user` 名称一经创建便不可更改，完整的 `key` **仅显示一次** —— 即在 `/key/add` 的响应中。
+
+#### `POST` `/api/v1/key/add`
+
+创建应用密钥。
+
+- 🍪 **是否需要 Cookie：** 是 —— `admin_token`
+- 🔑 **所需权限：** `can_operate_app_key`
+
+**请求体**
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `key_user_name` | string | ✅ | 唯一的密钥用户名；仅允许可打印 ASCII 字符（`0x20`–`0x7E`） |
+
+```json
+{ "key_user_name": "my_site" }
+```
+
+**响应**
+
+```json
+{ "code": 200, "key_user_name": "my_site", "key": "<64 位 sha256 key>" }
+```
+
+> 名称为空、包含非可打印 ASCII 字符，或 `key_user_name` 重复 → `400`。
+> ⚠️ 这是唯一会返回完整 `key` 的响应；请立即保存，之后无法再次查看。
+
+#### `POST` `/api/v1/key/range`
+
+分页 / 过滤的密钥列表。
+
+- 🍪 **是否需要 Cookie：** 是 —— `admin_token`
+- 🔑 **所需权限：** `can_operate_app_key`
+
+**请求体**
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `begin_table_id` | int | ✅ | 页码，从 `1` 开始 |
+| `length` | int | ✅ | 每页数量；`-1` 表示返回全部 |
+| `search_condition` | object | ❌ | 过滤条件（见下） |
+
+**`search_condition`**
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `key_user` | string | 模糊匹配（`LIKE %value%`） |
+
+```json
+{
+  "begin_table_id": 1,
+  "length": 20,
+  "search_condition": { "key_user": "my" }
+}
+```
+
+**响应**
+
+```json
+{ "code": 200, "message": "Success", "data": [ { "ID": 1, "KeyUser": "my_site", "Key": "abcde********klmno" } ] }
+```
+
+> 🔒 `Key` 已打码：保留前 5 位和后 5 位，中间用 8 个 `*` 替换，因此不会返回完整 key。
+
+#### `DELETE` `/api/v1/key/delete`
+
+根据 `key_user_name` 删除应用密钥。
+
+- 🍪 **是否需要 Cookie：** 是 —— `admin_token`
+- 🔑 **所需权限：** `can_operate_app_key`
+
+**请求体**
+
+| 字段 | 类型 | 必填 | 说明 |
+| --- | --- | --- | --- |
+| `key_user_name` | string | ✅ | 要删除的密钥用户名 |
+
+```json
+{ "key_user_name": "my_site" }
+```
+
+**响应**
+
+```json
+{ "code": 200, "message": "Success" }
+```
+
+> 记录为软删除，因此不会再出现在 `/key/range` 与 `/info` 中。
 
 ---
 

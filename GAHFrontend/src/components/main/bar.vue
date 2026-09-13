@@ -12,31 +12,37 @@
           <el-icon>
             <Odometer />
           </el-icon>
-          <template #title>首页</template>
+          <template #title>Home</template>
         </el-menu-item>
         <el-menu-item index="/main/admin" v-if="canGetAdmin">
           <el-icon>
             <SetUp />
           </el-icon>
-          <template #title>管理员管理</template>
+          <template #title>Admin Management</template>
         </el-menu-item>
         <el-menu-item index="/main/user" v-if="canGetUser">
           <el-icon>
             <User />
           </el-icon>
-          <template #title>用户管理</template>
+          <template #title>User Management</template>
         </el-menu-item>
         <el-menu-item index="/main/character" v-if="canGetCharacter">
           <el-icon>
             <Grid />
           </el-icon>
-          <template #title>角色管理</template>
+          <template #title>Character Management</template>
+        </el-menu-item>
+        <el-menu-item index="/main/key" v-if="canOperateKey">
+          <el-icon>
+            <Key />
+          </el-icon>
+          <template #title>Key Management</template>
         </el-menu-item>
       </el-menu>
     </el-aside>
 
     <el-container>
-      <!-- 顶部当前页栏 -->
+      <!-- Top current page bar -->
       <el-header class="layout-header">
         <div class="header-left">
           <el-icon class="collapse-btn" @click="collapsed = !collapsed">
@@ -44,16 +50,16 @@
             <Expand v-else />
           </el-icon>
           <el-breadcrumb separator="/">
-            <el-breadcrumb-item :to="{ path: '/main/home' }">首页</el-breadcrumb-item>
-            <el-breadcrumb-item v-if="pageTitle !== '首页'">{{ pageTitle }}</el-breadcrumb-item>
+            <el-breadcrumb-item :to="{ path: '/main/home' }">Home</el-breadcrumb-item>
+            <el-breadcrumb-item v-if="pageTitle !== 'Home'">{{ pageTitle }}</el-breadcrumb-item>
           </el-breadcrumb>
         </div>
         <div class="header-right">
-          <el-button type="primary" @click="handleLogout">退出登录</el-button>
+          <el-button type="primary" @click="handleLogout">Logout</el-button>
         </div>
       </el-header>
 
-      <!-- 内容区 -->
+      <!-- Content area -->
       <el-main class="layout-main">
         <router-view />
       </el-main>
@@ -64,7 +70,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Odometer, Fold, Expand, User, SetUp, Grid } from '@element-plus/icons-vue'
+import { Odometer, Fold, Expand, User, SetUp, Grid, Key } from '@element-plus/icons-vue'
 import { post, put, del } from '../../lib/request'
 import VueCookies from 'vue-cookies'
 
@@ -72,18 +78,18 @@ const route = useRoute()
 const router = useRouter()
 const collapsed = ref(false)
 
-// 当前激活菜单：取路由路径
+// Currently active menu: from the route path
 const activeMenu = computed(() => route.path)
-// 当前页面名称：优先取路由 meta.title
-const pageTitle = computed(() => route.meta.title || '首页')
+// Current page title: prefer route meta.title
+const pageTitle = computed(() => route.meta.title || 'Home')
 
 const handleLogout = async () => {
   try {
     await del('/admin/logout', {}, { showError: false })
   } catch {
-    // 即使后端出错也继续清理并跳转
+    // Continue cleanup and redirect even if the backend errors
   }
-  // 删除本地 cookie
+  // Remove local cookies
   VueCookies.remove('admin_token')
   VueCookies.remove('admin_name')
   router.push('/')
@@ -91,22 +97,28 @@ const handleLogout = async () => {
 
 const adminInfo = ref({})
 
-// 权限判断：root 全部放行；普通管理员读 permission 字段；数据未加载时返回 false
+// Permission check: allow everything for root; read the permission field for normal admins; return false before data loads
 const canGetAdmin = computed(() => {
   if (adminInfo.value.is_root) return true
   return Boolean(adminInfo.value.permission?.can_get_admin)
 })
 
-// 权限判断：root 全部放行；普通管理员读 permission 字段；数据未加载时返回 false
+// Permission check: allow everything for root; read the permission field for normal admins; return false before data loads
 const canGetUser = computed(() => {
   if (adminInfo.value.is_root) return true
   return Boolean(adminInfo.value.permission?.can_get_user)
 })
 
-// 权限判断：root 全部放行；普通管理员读 permission 字段；数据未加载时返回 false
+// Permission check: allow everything for root; read the permission field for normal admins; return false before data loads
 const canGetCharacter = computed(() => {
   if (adminInfo.value.is_root) return true
   return Boolean(adminInfo.value.permission?.can_get_character)
+})
+
+// Permission check: allow everything for root; read the permission field for normal admins; return false before data loads
+const canOperateKey = computed(() => {
+  if (adminInfo.value.is_root) return true
+  return Boolean(adminInfo.value.permission?.can_operate_app_key)
 })
 
 onMounted(()=>{

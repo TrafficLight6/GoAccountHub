@@ -10,22 +10,22 @@
 <script setup>
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api'
 import 'monaco-editor/esm/vs/editor/editor.all'
-// 基础语言（xml、yaml、ini 等）仅做词法高亮，不需要 worker
+// Basic languages (xml, yaml, ini, etc.) only need syntax highlighting, no worker required
 import 'monaco-editor/esm/vs/basic-languages/monaco.contribution'
-// json 高亮与校验由 language service 提供，需要 json worker
+// json highlighting and validation are provided by the language service, which needs the json worker
 import 'monaco-editor/esm/vs/language/json/monaco.contribution'
 import jsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker'
 import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
-// 只用到默认 worker 与 json worker
+// Only the default worker and the json worker are used
 self.MonacoEnvironment = {
     getWorker(_workerId, label) {
         return label === 'json' ? new jsonWorker() : new editorWorker()
     },
 }
 
-// monaco 未内置 toml，这里补一个词法高亮
+// monaco has no built-in toml, so add syntax highlighting here
 const tomlLanguage = {
     defaultToken: '',
     tokenPostfix: '.toml',
@@ -37,18 +37,18 @@ const tomlLanguage = {
         root: [
             [/[ \t\r\n]+/, 'white'],
             [/#.*$/, 'comment'],
-            // 表头只能在行首：[table] 与 [[array of tables]]
+            // Table headers are only allowed at the start of a line: [table] and [[array of tables]]
             [/^\s*\[\[[^\]]*\]\]/, 'type'],
             [/^\s*\[[^\]]*\]/, 'type'],
-            // 键，即 key = value 中的 key
+            // Key, i.e. the key in key = value
             [/[A-Za-z0-9_-]+(?=\s*=)/, 'key'],
-            // 日期时间（RFC 3339），必须在数字之前
+            // Date-time (RFC 3339), must come before numbers
             [/\d{4}-\d{2}-\d{2}(?:[Tt ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:[Zz]|[+-]\d{2}:\d{2})?)?/, 'number'],
             [/\d{2}:\d{2}:\d{2}(?:\.\d+)?/, 'number'],
             [/(?:true|false)(?![A-Za-z0-9_])/, 'keyword'],
-            // 数字：十进制、十六进制、八进制、二进制
+            // Numbers: decimal, hexadecimal, octal, binary
             [/[+-]?(?:0[xX][0-9A-Fa-f_]+|0[oO][0-7_]+|0[bB][01_]+|(?:0|[1-9][0-9_]*)(?:\.[0-9_]+)?(?:[eE][+-]?[0-9_]+)?)/, 'number'],
-            // 多行字符串要放在单行字符串之前
+            // Multi-line strings must come before single-line strings
             [/"""/, { token: 'string.quote', next: '@multiLineStringDouble' }],
             [/'''/, { token: 'string.quote', next: '@multiLineStringSingle' }],
             [/"/, { token: 'string.quote', next: '@stringDouble' }],
@@ -60,7 +60,7 @@ const tomlLanguage = {
             [/[^\\"\n]+/, 'string'],
             [/\\(?:[btnfr"\\]|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/, 'string.escape'],
             [/"/, { token: 'string.quote', next: '@pop' }],
-            // 未闭合的字符串换行后回到普通状态，避免污染后续内容
+            // Unterminated strings return to the normal state after a line break, to avoid polluting subsequent content
             [/\r?\n/, { token: 'string', next: '@pop' }],
         ],
         stringSingle: [
@@ -94,7 +94,7 @@ const LANGUAGE_OPTIONS = [
     { label: 'TXT', value: 'txt' },
 ]
 
-// txt 用 monaco 内置的纯文本语言
+// txt uses monaco's built-in plain text language
 const toMonacoLanguage = (value) => (value === 'txt' ? 'plaintext' : value)
 
 const props = defineProps({
@@ -102,7 +102,7 @@ const props = defineProps({
         type: String,
         default: '',
     },
-    // 语法类型：json / xml / yaml / ini / toml / txt
+    // Syntax type: json / xml / yaml / ini / toml / txt
     language: {
         type: String,
         default: 'json',
@@ -143,7 +143,7 @@ onMounted(() => {
     })
 })
 
-// 父组件传入的新值（与编辑器当前内容不同才同步，避免光标跳动）
+// New value passed from the parent (sync only when different from the editor content, to avoid cursor jumps)
 watch(
     () => props.modelValue,
     (val) => {
@@ -179,21 +179,22 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* 放在 flex 容器（如 el-form-item__content）里必须给确定宽度：
-   否则宽度由内容决定，而 monaco 会把自己量到的像素宽度写回 DOM，形成逐帧变宽的正反馈 */
+/* Inside a flex container (such as el-form-item__content) a definite width is required:
+   otherwise the width is content-driven, and monaco writes the pixel width it measured back into the DOM,
+   creating positive feedback that widens it frame by frame */
 .meta-data-editor {
     width: 100%;
     min-width: 0;
 }
 
-/* 标签栏只用来切换高亮，编辑器是独立区域，收紧默认间距 */
+/* The tab bar is only used to switch highlighting; the editor is a separate area, so tighten the default spacing */
 .meta-data-editor__tabs :deep(.el-tabs__header) {
     margin-bottom: 8px;
 }
 
 .meta-data-editor__body {
     width: 100%;
-    /* 项目没有全局 box-sizing 重置，用 border-box 让 1px 边框不额外撑宽 */
+    /* The project has no global box-sizing reset; use border-box so the 1px border does not add extra width */
     box-sizing: border-box;
     overflow: hidden;
     border: 1px solid var(--el-border-color);

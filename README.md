@@ -89,4 +89,4 @@ This project need a PostgreSQL database to store.
         ```
         Now you can access the GAH frontend in `http://localhost:<your_frontend_port>`.
 
-**__More Information,Please See The [`docs/api.md`](docs/api.md)__.**
+**__More Information,Please See The [`./docs`](./docs)__.**

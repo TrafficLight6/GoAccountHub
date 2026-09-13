@@ -3,27 +3,27 @@
     <el-card class="login-card">
       <template #header>
         <div class="login-header">
-          <h2>登录</h2>
+          <h2>Login</h2>
         </div>
       </template>
 
       <el-form ref="loginFormRef" :model="loginForm" :rules="rules" label-position="top" @submit.prevent="handleLogin">
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="loginForm.username" placeholder="请输入用户名" :prefix-icon="User" clearable />
+        <el-form-item label="Username" prop="username">
+          <el-input v-model="loginForm.username" placeholder="Please enter username" :prefix-icon="User" clearable />
         </el-form-item>
 
-        <el-form-item label="密码" prop="password">
-          <el-input v-model="loginForm.password" type="password" placeholder="请输入密码" :prefix-icon="Lock" show-password
+        <el-form-item label="Password" prop="password">
+          <el-input v-model="loginForm.password" type="password" placeholder="Please enter password" :prefix-icon="Lock" show-password
             @keyup.enter="handleLogin" />
         </el-form-item>
 
         <el-form-item>
-          <el-checkbox v-model="loginForm.keepLoggedIn">保持登录</el-checkbox>
+          <el-checkbox v-model="loginForm.keepLoggedIn">Keep me logged in</el-checkbox>
         </el-form-item>
 
         <el-form-item>
           <el-button type="primary" :loading="loading" class="login-btn" @click="handleLogin">
-            登录
+            Login
           </el-button>
         </el-form-item>
       </el-form>
@@ -50,22 +50,22 @@ const loginForm = reactive({
 
 const rules = {
   username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 0, max: 32, message: '用户名长度不能超过 32 个字符', trigger: 'blur' },
+    { required: true, message: 'Please enter username', trigger: 'blur' },
+    { min: 0, max: 32, message: 'Username must be at most 32 characters', trigger: 'blur' },
   ],
   password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 0, max: 64, message: '密码长度不能超过 64 个字符', trigger: 'blur' },
+    { required: true, message: 'Please enter password', trigger: 'blur' },
+    { min: 0, max: 64, message: 'Password must be at most 64 characters', trigger: 'blur' },
   ],
 }
 
-// 已登录则直接跳转主页
+// Redirect to home if already logged in
 onMounted(async () => {
   try {
     await post('/admin/check_token', {}, { showError: false, autoRedirect401: false })
     router.push('/main/home')
   } catch {
-    // 未登录，留在登录页
+    // Not logged in, stay on the login page
   }
 })
 
@@ -87,18 +87,18 @@ const handleLogin = async () => {
       },
       { showError: false }
     )
-    ElMessage.success('登录成功')
+    ElMessage.success('Logged in')
     router.push('/main/home')
   } catch (e) {
     if (e.code === 400) {
-      // 凭证错误（用户名/密码错误），统一中文提示
-      ElMessage.error('用户名或密码错误')
+      // Invalid credentials (wrong username/password), unified message
+      ElMessage.error('Incorrect username or password')
     } else if (e.code) {
-      // 其他后端业务错误
-      ElMessage.error(e.message || '登录失败，请重试')
+      // Other backend business errors
+      ElMessage.error(e.message || 'Login failed, please try again')
     } else {
-      // 网络层异常（断网/后端未启动）
-      ElMessage.error('网络请求失败，请检查网络或后端服务')
+      // Network layer error (offline / backend not running)
+      ElMessage.error('Network request failed, please check your network or backend service')
     }
   } finally {
     loading.value = false

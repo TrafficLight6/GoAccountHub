@@ -52,7 +52,8 @@ Normal admins carry a `permission` object:
   "can_edit_admin": false,
   "can_get_admin": false,
   "can_operate_user": false,
-  "can_operate_character": false
+  "can_operate_character": false,
+  "can_operate_app_key": false
 }
 ```
 
@@ -68,6 +69,7 @@ Normal admins carry a `permission` object:
 | `can_edit_admin` | `PUT /admin/edit` |
 | `can_operate_user` | All `/api/v1/user/*` admin endpoints |
 | `can_operate_character` | All `/api/v1/character/*` admin endpoints |
+| `can_operate_app_key` | All `/api/v1/key/*` admin endpoints |
 
 ## 📋 Quick Reference
 
@@ -97,6 +99,9 @@ Normal admins carry a `permission` object:
 | `PUT` | `/api/v1/character/edit` | ✅ `admin_token` | `can_operate_character` + multi-character switch |
 | `POST` | `/api/v1/character/get` | ✅ `admin_token` | `can_operate_character` + multi-character switch |
 | `POST` | `/api/v1/character/range` | ✅ `admin_token` | `can_operate_character` + multi-character switch |
+| `POST` | `/api/v1/key/add` | ✅ `admin_token` | `can_operate_app_key` |
+| `POST` | `/api/v1/key/range` | ✅ `admin_token` | `can_operate_app_key` |
+| `DELETE` | `/api/v1/key/delete` | ✅ `admin_token` | `can_operate_app_key` |
 | `POST` | `/api/v1/app/user/login` | ✅ `app_key` | — |
 | `DELETE` | `/api/v1/app/user/logout` | ✅ `app_key` | — |
 | `POST` | `/api/v1/app/user/add` | ✅ `app_key` | — |
@@ -196,6 +201,7 @@ Dashboard statistics for any logged-in admin.
   "data": {
     "user_count": 10,
     "character_count": 25,
+    "key_count": 4,
     "total_token_count": 7,
     "user_token_count": 5,
     "admin_token_count": 2,
@@ -399,6 +405,7 @@ Paginated / filtered admin list. **The root admin is not included.**
 | `can_get_admin` | bool | Same as above |
 | `can_operate_user` | bool | Same as above |
 | `can_operate_character` | bool | Same as above |
+| `can_operate_app_key` | bool | Same as above |
 
 ```json
 {
@@ -659,6 +666,98 @@ Paginated / filtered character list.
 ```json
 { "code": 200, "message": "Success", "data": [ { "ID": 5, "CharacterName": "bob_alt" } ] }
 ```
+
+### 🔑 Key Management
+
+Application keys are the credentials third-party apps send as the `app_key` cookie (see [Cookie & Auth Model](#-cookie--auth-model)). A `key_user` name is immutable once created, and the full `key` is **shown only once** — in the `/key/add` response.
+
+#### `POST` `/api/v1/key/add`
+
+Create an application key.
+
+- 🍪 **Cookie required:** Yes — `admin_token`
+- 🔑 **Permission required:** `can_operate_app_key`
+
+**Request Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `key_user_name` | string | ✅ | Unique key user name; printable ASCII only (`0x20`–`0x7E`) |
+
+```json
+{ "key_user_name": "my_site" }
+```
+
+**Response**
+
+```json
+{ "code": 200, "key_user_name": "my_site", "key": "<64-char sha256 key>" }
+```
+
+> Empty name, non-printable-ASCII characters, or a duplicate `key_user_name` → `400`.
+> ⚠️ This is the only response containing the full `key`; store it immediately, it cannot be viewed again.
+
+#### `POST` `/api/v1/key/range`
+
+Paginated / filtered key list.
+
+- 🍪 **Cookie required:** Yes — `admin_token`
+- 🔑 **Permission required:** `can_operate_app_key`
+
+**Request Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `begin_table_id` | int | ✅ | Page index, starts at `1` |
+| `length` | int | ✅ | Page size; `-1` = return all |
+| `search_condition` | object | ❌ | Filters below |
+
+**`search_condition`**
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `key_user` | string | Fuzzy match (`LIKE %value%`) |
+
+```json
+{
+  "begin_table_id": 1,
+  "length": 20,
+  "search_condition": { "key_user": "my" }
+}
+```
+
+**Response**
+
+```json
+{ "code": 200, "message": "Success", "data": [ { "ID": 1, "KeyUser": "my_site", "Key": "abcde********klmno" } ] }
+```
+
+> 🔒 `Key` is masked: the first 5 and last 5 characters are kept and the middle is replaced by 8 asterisks, so the full key is never returned here.
+
+#### `DELETE` `/api/v1/key/delete`
+
+Delete an application key by `key_user_name`.
+
+- 🍪 **Cookie required:** Yes — `admin_token`
+- 🔑 **Permission required:** `can_operate_app_key`
+
+**Request Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `key_user_name` | string | ✅ | Key user name to delete |
+
+```json
+{ "key_user_name": "my_site" }
+```
+
+**Response**
+
+```json
+{ "code": 200, "message": "Success" }
+```
+
+> Records are soft-deleted, so they no longer appear in `/key/range` or `/info`.
 
 ---
 

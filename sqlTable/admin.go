@@ -25,6 +25,8 @@ type Permission struct {
 	CanOperateUser bool `gorm:"column:can_operate_user" json:"can_operate_user"`
 	//Character Permission
 	CanOperateCharacter bool `gorm:"column:can_operate_character" json:"can_operate_character"`
+	//AppKey Permission
+	CanOperateAppKey bool `gorm:"column:can_operate_app_key" json:"can_operate_app_key"`
 }
 
 type AdminForEdit struct {

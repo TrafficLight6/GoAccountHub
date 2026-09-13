@@ -5,7 +5,7 @@ import Home from '../components/main/page/home.vue'
 import Admin from '../components/main/page/admin.vue'
 import User from '../components/main/page/user.vue'
 import Character from '../components/main/page/character.vue'
-import ComponentTest from '../components/component_test.vue'
+import ComponentTest from '../components/ComponentTest.vue'
 
 const routes = [
   {
@@ -16,7 +16,7 @@ const routes = [
   {
     path: '/component',
     name: 'ComponentTest',
-    component: () => import('../components/component_test.vue'),
+    component: ComponentTest,
   },
   {
     path: '/main',
@@ -27,26 +27,32 @@ const routes = [
         path: 'home',
         name: 'Home',
         component: Home,
-        meta: { title: '首页' },
+        meta: { title: 'Home' },
       },
       {
         path: 'admin',
         name: 'Admin',
         component: Admin,
-        meta: { title: '管理员管理' },
+        meta: { title: 'Admin Management' },
       },
       {
         path: 'user',
         name: 'User',
         component: User,
-        meta: { title: '用户管理' },
+        meta: { title: 'User Management' },
       },
       {
         path: 'character',
         name: 'Character',
         component: Character,
-        meta: { title: '角色管理' },
-           },
+        meta: { title: 'Character Management' },
+      },
+      {
+        path: 'key',
+        name: 'Key',
+        component: () => import('../components/main/page/key.vue'),
+        meta: { title: 'Key Management' },
+      },
     ],
   },
 ]
