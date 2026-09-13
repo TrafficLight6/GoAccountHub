@@ -320,7 +320,7 @@ const columns = [
     {
         key: 'actions',
         title: 'Actions',
-        width: 200,
+        width: 250,
         cellRenderer: ({ rowData }) => h('div', { style: 'display: flex; gap: 8px;' }, [
             h(ElButton, { type: 'danger', size: 'small', onClick: () => handleDelete(rowData) }, () => 'Delete Character'),
             h(ElButton, { type: 'primary', size: 'small', onClick: () => handleEdit(rowData) }, () => 'Edit Character'),
