@@ -6,6 +6,7 @@ import Admin from '../components/main/page/admin.vue'
 import User from '../components/main/page/user.vue'
 import Character from '../components/main/page/character.vue'
 import ComponentTest from '../components/ComponentTest.vue'
+import NotFound from '../components/main/404.vue'
 
 const routes = [
   {
@@ -54,6 +55,12 @@ const routes = [
         meta: { title: 'Key Management' },
       },
     ],
+  },
+  // Any path that does not match a route (including unknown paths under /main) is a full page 404
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: NotFound,
   },
 ]
 

@@ -1,6 +1,8 @@
 package router
 
 import (
+	"io/fs"
+
 	"github.com/TrafficLight6/GoAccountHub/adminControllor"
 	"github.com/TrafficLight6/GoAccountHub/appControllor"
 	"github.com/TrafficLight6/GoAccountHub/checkControllor"
@@ -11,7 +13,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func ReturnRouter(config config.Config) (*gin.Engine, *gorm.DB) {
+func ReturnRouter(config config.Config, frontendFS fs.FS) (*gin.Engine, *gorm.DB) {
 	router := gin.Default()
 	db := sqlOperator.ConnectDB(config)
 	if db == nil {
@@ -21,10 +23,6 @@ func ReturnRouter(config config.Config) (*gin.Engine, *gorm.DB) {
 	//Middleware
 	router.Use(middleware.ConfigInsertMiddleware(config))
 	router.Use(middleware.DBInsertMiddleware(db))
-
-	router.RouterGroup.Group("/")
-	//Root Page
-	router.GET("/", adminControllor.Root)
 
 	//v1 Api
 	v1 := router.Group("/api/v1")
@@ -99,5 +97,7 @@ func ReturnRouter(config config.Config) (*gin.Engine, *gorm.DB) {
 		app.POST("/user/get/metadata", appControllor.GetUserMetaData)
 		app.POST("/character/get/metadata", appControllor.GetCharacterMetaData)
 	}
+	//Serve the embedded frontend for every path that is not an API route
+	registerFrontend(router, frontendFS)
 	return router, db
 }
