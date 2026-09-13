@@ -14,8 +14,6 @@
 ## 🌐 Language
 [English](README.md) | [简体中文](README_zh-cn.md)
 
-> ⚠️ **分支说明：** 当前是 `dev-integration` 分支，用于把 Web 界面与 API 服务合并为一体（构建好的前端会被嵌入 Go 二进制）。它仍在开发中，需要稳定版本请使用 `main` 分支。
-
 ## 📖 项目简介
 
 GoAccountHub（简称 GAH）是一个用 Go 编写的用户中心。它可以存储用户元数据，并支持一个用户拥有多个子用户（本项目称为**角色**），同时提供 Vue 3 管理页面和面向第三方应用的 API。数据存储使用 PostgreSQL。
@@ -44,16 +42,23 @@ GoAccountHub（简称 GAH）是一个用 Go 编写的用户中心。它可以存
 
 ## 🚀 编译
 
-**__目前只能通过编译安装，计划之后提供 docker-compose 文件。__**
+**__如果直接下载二进制文件，请跳过以下步骤。**__**
 
-最简单的方式是使用一键脚本：它会先构建前端，再把前端嵌入后端一起编译：
+编译由 magefile（[`build.go`](./build.go)）驱动。先安装一次 mage —— 版本取自 `go.mod`：
 
 ```bash
-./build.cmd          # Windows（cmd 或双击运行）
-./build.sh           # Linux / macOS / Git Bash
+go install github.com/magefile/mage
 ```
 
-脚本会打印 `GAHversion` 中的版本号与最终二进制大小；任一步失败都会给出明确报错并中断。
+| 命令 | 作用 |
+| --- | --- |
+| `mage frontend` | 在 `GAHFrontend` 下执行 `npm ci` + `npm run build`，产出 `GAHFrontend/dist` |
+| `mage build` | 编译本机二进制 `gah`（Windows 为 `gah.exe`），嵌入 `GAHFrontend/dist` 中已有的内容 |
+| `mage all` | 依次执行 `frontend`、`build` —— 一键编译并嵌入前端 |
+| `mage cross` | 交叉编译 windows / linux / darwin 的 amd64 与 arm64，输出到 `bin/` |
+| `mage allCross` | 依次执行 `frontend`、`cross` —— 发布用编译，且嵌入前端 |
+
+交叉编译的产物为 `bin/GoAccountHub-<GAHversion>-<os>-<arch>[.exe]`，版本号读取自 `GAHversion`。
 
 手动等价操作 —— **顺序很重要**：
 
@@ -179,7 +184,7 @@ GoAccountHub/
 ├── sqlTable/                   # GORM 模型
 ├── cliAction/                  # 命令行命令（start / password / generate / generate-test）
 ├── GAHFrontend/                # Vue 3 + Vite 管理页面
-├── build.cmd, build.sh         # 一键编译脚本
+├── build.go                    # magefile：frontend / build / cross 等目标
 └── GAHversion                  # 版本文件
 ```
 
@@ -190,11 +195,10 @@ GoAccountHub/
 
 ## 🏗️ 构建与发布
 
-GitHub Actions（`.github/workflows/go.yml`）在向 `main` 推送或提交 PR 时运行：
+GitHub Actions（`.github/workflows/go.yml`）仅在向 `main` 推送时运行：
 
-- **build** —— `go build ./...` 与 `go test ./...`
-- **frontend-build** —— `npm ci` + `npm run build`，产物以 `frontend-dist` 上传
-- **cross-build** —— 下载上述产物到 `GAHFrontend/dist`，再交叉编译 windows / linux / darwin 的 amd64 与 arm64；每个二进制以 `GoAccountHub-<GAHversion>-<os>-<arch>` 上传
+- **test** —— `go test ./...`
+- **release** —— 安装 mage 后执行 `mage allcross`：前端只构建一次，再交叉编译 windows / linux / darwin 的 amd64 与 arm64；6 个二进制合并为一个 `GoAccountHub-<GAHversion>` 制品上传
 
 ## 📄 许可证
 

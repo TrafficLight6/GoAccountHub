@@ -230,7 +230,7 @@ GoAccountHub password <your_password>
 
 # 3. Edit the config file and fill in database parameters etc. (see Config File Fields above)
 
-# 4. Build the frontend and then the server (or just run `build.cmd` / `build.sh`)
+# 4. Build the frontend and then the server (or just run `mage all`)
 cd GAHFrontend && npm ci && npm run build && cd ..
 go build -o GoAccountHub .
 
