@@ -18,6 +18,7 @@ func Info(c *gin.Context) {
 	var (
 		userCount       int64
 		characterCount  int64
+		keyCount        int64
 		userTokenCount  int64
 		adminTokenCount int64
 		adminCount      int64
@@ -31,6 +32,11 @@ func Info(c *gin.Context) {
 	//Count Characters
 	if err := db.Model(&sqlTable.Character{}).Count(&characterCount).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": http.StatusInternalServerError, "error": "Failed To Count Characters"})
+		return
+	}
+	//Count Keys
+	if err := db.Model(&sqlTable.ApplicationKey{}).Count(&keyCount).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": http.StatusInternalServerError, "error": "Failed To Count Keys"})
 		return
 	}
 	//Count Tokens (user tokens + admin tokens)
@@ -56,6 +62,7 @@ func Info(c *gin.Context) {
 		"data": gin.H{
 			"user_count":        userCount,
 			"character_count":   characterCount,
+			"key_count":         keyCount,
 			"total_token_count": userTokenCount + adminTokenCount,
 			"user_token_count":  userTokenCount,
 			"admin_token_count": adminTokenCount,
