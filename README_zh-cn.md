@@ -22,12 +22,12 @@ Go Account Hub（简称 GAH）是一个用 Go 语言编写的用户中心，可�
 ## 🛠️ 安装与启动
 **目前只能通过编译安装。我们计划在未来添加 docker-compose 文件。**
 
-- 📦 安装
-        1. 克隆本仓库。
-        2. 安装 PostgreSQL 数据库和 Node.js。
-        3. 在 `./GoAccountHub` 目录下执行 `go mod tidy` 以安装 Go 依赖。
-        4. 在 `./GoAccountHub/GAHFrontend` 目录下执行 `npm install` 以安装 Vue 依赖。
-        5. 在 `./GoAccountHub` 目录下编译 Go 项目，执行 `go build` 进行编译。
+- 📦 安装  
+        1. 克隆本仓库。  
+        2. 安装 PostgreSQL 数据库和 Node.js。  
+        3. 在 `./GoAccountHub` 目录下执行 `go mod tidy` 以安装 Go 依赖。  
+        4. 在 `./GoAccountHub/GAHFrontend` 目录下执行 `npm install` 以安装 Vue 依赖。  
+        5. 在 `./GoAccountHub` 目录下编译 Go 项目，执行 `go build` 进行编译。  
 - ▶️ 启动
     **⚠️注意：在启动 API 服务之前，你**必须**先启动 API 服务。同时请确保前端根目录下存在 `.env` 文件。因为 API 服务启动时会根据配置修改该 `.env` 文件。**
 
