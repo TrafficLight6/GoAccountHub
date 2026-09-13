@@ -15,6 +15,7 @@
                 <el-checkbox v-model="form.permission.can_get_admin">Can get admin list</el-checkbox>
                 <el-checkbox v-model="form.permission.can_operate_user">Can operate users</el-checkbox>
                 <el-checkbox v-model="form.permission.can_operate_character">Can operate characters</el-checkbox>
+                <el-checkbox v-model="form.permission.can_operate_app_key">Can operate app key</el-checkbox>
             </el-form-item>
         </el-form>
         <template #footer>
@@ -47,6 +48,7 @@ const form = reactive({
         can_get_admin: false,
         can_operate_user: false,
         can_operate_character: false,
+        can_operate_app_key: false,
     },
 })
 </script>
