@@ -15,8 +15,6 @@ GoAccountHub builds its command-line interface with [urfave/cli v2](https://gith
 | `password` | Edit Root Admin Password |
 | `generate` | Generate Config File |
 | `generate-test` | Generate Test Config File |
-| `add-key` | Add Application Key |
-| `del-key` | Delete Application Key |
 
 To view global help and version information:
 
@@ -168,72 +166,6 @@ Prints `✅ Config File is Generated, Default Password is 123` on completion.
 
 ```bash
 GoAccountHub generate-test
-```
-
----
-
-## add-key
-
-Add an Application Key and store it in the database.
-
-**Usage**
-
-```bash
-GoAccountHub add-key [options]
-```
-
-**Options**
-
-| Option | Alias | Default | Description |
-| --- | --- | --- | --- |
-| `--config` | `-c` | `./config.json` | Config file path |
-| `--site` | `-s` | `default` | The application site this key belongs to |
-
-**Behavior**
-
-1. Reads the config and connects to the database (the connection is closed automatically after execution).
-2. Builds an `ApplicationKey`:
-   - `application_using_site = <site>`
-   - `key = SHA256(site + time.Now().String())`
-3. Writes it to the database and prints `✅ Add Key Success`.
-
-> ℹ️ Note: The generated key is only stored in the database and is not printed to the terminal. Query the database if you need to use it.
-
-**Examples**
-
-```bash
-GoAccountHub add-key
-GoAccountHub add-key -s mysite
-```
-
----
-
-## del-key
-
-Delete an Application Key from the database.
-
-**Usage**
-
-```bash
-GoAccountHub del-key [options]
-```
-
-**Options**
-
-| Option | Alias | Default | Description |
-| --- | --- | --- | --- |
-| `--config` | `-c` | `./config.json` | Config file path |
-| `--key` | `-k` | `default` | The Application Key to delete |
-
-**Behavior**
-
-1. Reads the config and connects to the database (the connection is closed automatically after execution).
-2. Deletes the record by key and prints `✅ Delete Key Success`.
-
-**Examples**
-
-```bash
-GoAccountHub del-key -k <your_key>
 ```
 
 ---

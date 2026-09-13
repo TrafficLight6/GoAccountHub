@@ -15,8 +15,6 @@ GoAccountHub 使用 [urfave/cli v2](https://github.com/urfave/cli) 构建命令�
 | `password` | 修改 Root Admin 密码 |
 | `generate` | 生成配置文件 |
 | `generate-test` | 生成测试用配置文件 |
-| `add-key` | 新增 Application Key |
-| `del-key` | 删除 Application Key |
 
 查看全局帮助与版本信息：
 
@@ -168,72 +166,6 @@ GoAccountHub generate-test [选项]
 
 ```bash
 GoAccountHub generate-test
-```
-
----
-
-## add-key
-
-新增一个 Application Key 并写入数据库。
-
-**用法**
-
-```bash
-GoAccountHub add-key [选项]
-```
-
-**选项**
-
-| 选项 | 别名 | 默认值 | 说明 |
-| --- | --- | --- | --- |
-| `--config` | `-c` | `./config.json` | 配置文件路径 |
-| `--site` | `-s` | `default` | 该 Key 对应的应用站点 |
-
-**行为**
-
-1. 读取配置并连接数据库（执行完成后自动关闭连接）。
-2. 构造 `ApplicationKey`：
-   - `application_using_site = <site>`
-   - `key = SHA256(site + time.Now().String())`
-3. 写入数据库，输出 `✅ Add Key Success`。
-
-> ℹ️ 说明：生成的 Key 仅存入数据库，不会打印到终端，如需使用请从数据库中查询。
-
-**示例**
-
-```bash
-GoAccountHub add-key
-GoAccountHub add-key -s mysite
-```
-
----
-
-## del-key
-
-删除数据库中的 Application Key。
-
-**用法**
-
-```bash
-GoAccountHub del-key [选项]
-```
-
-**选项**
-
-| 选项 | 别名 | 默认值 | 说明 |
-| --- | --- | --- | --- |
-| `--config` | `-c` | `./config.json` | 配置文件路径 |
-| `--key` | `-k` | `default` | 要删除的 Application Key |
-
-**行为**
-
-1. 读取配置并连接数据库（执行完成后自动关闭连接）。
-2. 按 key 删除记录，输出 `✅ Delete Key Success`。
-
-**示例**
-
-```bash
-GoAccountHub del-key -k <your_key>
 ```
 
 ---
