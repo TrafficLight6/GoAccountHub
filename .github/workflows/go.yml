@@ -1,17 +1,15 @@
-# This workflow will build a golang project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+# This workflow builds, tests and cross compiles GoAccountHub with mage.
+# See build.go for the build targets used here.
 
 name: Go
 
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
 
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -20,17 +18,22 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: '1.27'
-
-    - name: Build
-      run: go build -v ./...
+        cache: true
 
     - name: Test
       run: go test -v ./...
 
-  frontend-build:
+  release:
+    needs: test
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.27'
+        cache: true
 
     - name: Set up Node
       uses: actions/setup-node@v4
@@ -39,71 +42,22 @@ jobs:
         cache: npm
         cache-dependency-path: GAHFrontend/package-lock.json
 
-    - name: Install Dependencies
-      working-directory: GAHFrontend
-      run: npm ci
+    - name: Install mage
+      run: go install github.com/magefile/mage
 
-    - name: Build
-      working-directory: GAHFrontend
-      run: npm run build
-
-    - name: Upload Frontend
-      uses: actions/upload-artifact@v4
-      with:
-        name: frontend-dist
-        path: GAHFrontend/dist
-
-  cross-build:
-    needs: frontend-build
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - goos: windows
-            goarch: amd64
-            ext: .exe
-          - goos: windows
-            goarch: arm64
-            ext: .exe
-          - goos: linux
-            goarch: amd64
-            ext: ''
-          - goos: linux
-            goarch: arm64
-            ext: ''
-          - goos: darwin
-            goarch: amd64
-            ext: ''
-          - goos: darwin
-            goarch: arm64
-            ext: ''
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Download Frontend
-      uses: actions/download-artifact@v4
-      with:
-        name: frontend-dist
-        path: GAHFrontend/dist
-
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.27'
+    - name: Add GOPATH/bin to PATH
+      run: echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
 
     - name: Read version
       id: version
       run: echo "value=$(cat GAHversion)" >> "$GITHUB_OUTPUT"
 
-    - name: Build
-      env:
-        CGO_ENABLED: 0
-        GOOS: ${{ matrix.goos }}
-        GOARCH: ${{ matrix.goarch }}
-      run: go build -trimpath -ldflags "-s -w" -o GoAccountHub-${{ steps.version.outputs.value }}-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} .
+    - name: Build frontend and cross compile
+      run: mage allcross
 
-    - name: Upload Artifact
+    - name: Upload binaries
       uses: actions/upload-artifact@v4
       with:
-        name: GoAccountHub-${{ steps.version.outputs.value }}-${{ matrix.goos }}-${{ matrix.goarch }}
-        path: GoAccountHub-${{ steps.version.outputs.value }}-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}
+        name: GoAccountHub-${{ steps.version.outputs.value }}
+        path: bin/*
+        if-no-files-found: error
