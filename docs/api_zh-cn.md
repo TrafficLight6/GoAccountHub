@@ -128,12 +128,21 @@
 
 ### `GET` `/`
 
-返回编译进二进制的 Web 界面。所有非 API 路由的路径都会回退到 `index.html`，因此像 `/main/key` 这样的前端路由可以直接打开或刷新。
+返回编译进二进制的 Web 界面。
 
 - 🍪 **是否需要 Cookie：** 否
 - 🔑 **所需权限：** —
 
-> 如果编译时没有嵌入前端（不存在 `GAHFrontend/dist/index.html`），未匹配的路径会返回 `404`，并提示在 `GAHFrontend` 下执行 `npm run build`。
+前端路由会与一份白名单比对（与 Vue 路由保持一致：`/`、`/component`、`/main`、`/main/home`、`/main/admin`、`/main/user`、`/main/character`、`/main/key`）：
+
+| 请求 | 状态码 | 响应体 |
+| --- | --- | --- |
+| 白名单中的前端路由 | `200` | `index.html` |
+| 存在的静态文件（如 `/assets/...`） | `200` | 该文件 |
+| 其它任意路径 | `404` | `index.html`，由前端渲染自己的 404 页面 |
+| 未匹配到接口的 `/api/*` 路径 | `404` | JSON 错误 |
+
+> 如果编译时没有嵌入前端（不存在 `GAHFrontend/dist/index.html`），所有未知路径都会返回 JSON `404`，并提示在 `GAHFrontend` 下执行 `npm run build`。
 
 ---
 

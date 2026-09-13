@@ -9,9 +9,25 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// frontendRoutes are the client side routes declared in
+// GAHFrontend/src/router/index.js. They are served with HTTP 200; every other
+// path that is neither an API route nor a real file is a 404.
+// Keep this list in sync with the frontend router.
+var frontendRoutes = map[string]struct{}{
+	"/":               {},
+	"/component":      {},
+	"/main":           {},
+	"/main/home":      {},
+	"/main/admin":     {},
+	"/main/user":      {},
+	"/main/character": {},
+	"/main/key":       {},
+}
+
 // registerFrontend serves the embedded frontend for every path that does not
-// match an API route. Unknown paths fall back to index.html, so client side
-// routes such as /main/key survive a page refresh.
+// match an API route. The frontend routes above are answered with HTTP 200,
+// unknown paths are answered with HTTP 404; both return index.html so that the
+// frontend can render the page or its own 404 page.
 func registerFrontend(router *gin.Engine, frontendFS fs.FS) {
 	if frontendFS == nil {
 		router.NoRoute(frontendMissing())
@@ -29,16 +45,25 @@ func registerFrontend(router *gin.Engine, frontendFS fs.FS) {
 			c.JSON(http.StatusNotFound, gin.H{"code": http.StatusNotFound, "error": "Not Found"})
 			return
 		}
-		name := strings.TrimPrefix(path.Clean(c.Request.URL.Path), "/")
+		//index.html is returned directly because http.FileServer redirects
+		//"/index.html" back to "/"
+		serveIndex := func(status int) {
+			c.Data(status, "text/html; charset=utf-8", indexHTML)
+		}
+		frontendPath := path.Clean(c.Request.URL.Path)
+		name := strings.TrimPrefix(frontendPath, "/")
 		if name != "" && fs.ValidPath(name) {
 			if info, err := fs.Stat(frontendFS, name); err == nil && !info.IsDir() {
 				fileServer.ServeHTTP(c.Writer, c.Request)
 				return
 			}
 		}
-		//SPA fallback (index.html is returned directly because http.FileServer
-		//redirects "/index.html" back to "/")
-		c.Data(http.StatusOK, "text/html; charset=utf-8", indexHTML)
+		if _, ok := frontendRoutes[frontendPath]; ok {
+			serveIndex(http.StatusOK)
+			return
+		}
+		//Unknown client side route: let the frontend show its own 404 page
+		serveIndex(http.StatusNotFound)
 	})
 }
 

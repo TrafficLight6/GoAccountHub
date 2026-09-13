@@ -128,12 +128,21 @@ Normal admins carry a `permission` object:
 
 ### `GET` `/`
 
-Serves the web UI embedded in the binary. Every path that is not an API route falls back to `index.html`, so client side routes such as `/main/key` can be opened or refreshed directly.
+Serves the web UI embedded in the binary.
 
 - 🍪 **Cookie required:** No
 - 🔑 **Permission required:** —
 
-> If the server was compiled without the frontend (no `GAHFrontend/dist/index.html`), unknown paths return `404` with a hint to run `npm run build` in `GAHFrontend`.
+Client side routes are matched against a whitelist that mirrors the Vue router (`/`, `/component`, `/main`, `/main/home`, `/main/admin`, `/main/user`, `/main/character`, `/main/key`):
+
+| Request | Status | Body |
+| --- | --- | --- |
+| A whitelisted client side route | `200` | `index.html` |
+| An existing static file (e.g. `/assets/...`) | `200` | that file |
+| Any other path | `404` | `index.html`, so the frontend renders its own 404 page |
+| A `/api/*` path that matches no endpoint | `404` | JSON error |
+
+> If the server was compiled without the frontend (no `GAHFrontend/dist/index.html`), every unknown path returns a JSON `404` with a hint to run `npm run build` in `GAHFrontend`.
 
 ---
 
