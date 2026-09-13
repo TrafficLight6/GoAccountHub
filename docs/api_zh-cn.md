@@ -123,16 +123,12 @@
 
 ### `GET` `/`
 
-健康检查 / 欢迎检查。
+返回内嵌的 Web 界面（`GAHFrontend/dist`）。所有非 API 路由的路径都会回退到 `index.html`，因此像 `/main/key` 这样的前端路由可以直接打开或刷新。
 
 - 🍪 **是否需要 Cookie：** 否
 - 🔑 **所需权限：** —
 
-**响应**
-
-```json
-{ "code": 200, "message": "Welcome to GoAccountHub" }
-```
+> 如果编译时没有嵌入前端（不存在 `GAHFrontend/dist/index.html`），未匹配的路径会返回 `404`，并提示在 `GAHFrontend` 下执行 `npm run build`。
 
 ---
 

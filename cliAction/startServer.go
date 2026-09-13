@@ -2,6 +2,7 @@ package action
 
 import (
 	"fmt"
+	"io/fs"
 
 	"github.com/TrafficLight6/GoAccountHub/config"
 	"github.com/TrafficLight6/GoAccountHub/file"
@@ -9,7 +10,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func StartServerAction() *cli.Command {
+func StartServerAction(frontendFS fs.FS) *cli.Command {
 	return &cli.Command{
 		Name:  "start",
 		Usage: "Start GoAccountHub",
@@ -25,7 +26,7 @@ func StartServerAction() *cli.Command {
 			config := config.GetConfig(c.String("config"))
 			//Update Frontend Port
 			file.Write("./GAHFrontend/.env", "PORT="+config.FrontendPort+"\nVITE_API_PROXY_TARGET=http://127.0.0.1:"+config.Port)
-			err := server.StartServer(config)
+			err := server.StartServer(config, frontendFS)
 			if err != nil {
 				fmt.Println("⚠️ Error when Start Server:", err)
 				return err

@@ -123,16 +123,12 @@ Normal admins carry a `permission` object:
 
 ### `GET` `/`
 
-Health / welcome check.
+Serves the embedded web UI (`GAHFrontend/dist`). Every path that is not an API route falls back to `index.html`, so client side routes such as `/main/key` can be opened or refreshed directly.
 
 - 🍪 **Cookie required:** No
 - 🔑 **Permission required:** —
 
-**Response**
-
-```json
-{ "code": 200, "message": "Welcome to GoAccountHub" }
-```
+> If the server was compiled without the frontend (no `GAHFrontend/dist/index.html`), unknown paths return `404` with a hint to run `npm run build` in `GAHFrontend`.
 
 ---
 

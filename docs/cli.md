@@ -50,8 +50,11 @@ GoAccountHub start [options]
    VITE_API_PROXY_TARGET=http://127.0.0.1:<port>
    ```
 3. Starts the API server.
+4. Serves the web UI embedded in the binary (`GAHFrontend/dist`) on the same port, so `http://localhost:<port>` opens the admin frontend.
 
 > ⚠️ Note: Before starting the server, make sure a `.env` file exists in the frontend root directory. The server overwrites this file according to the config on startup.
+
+> ℹ️ Run `npm run build` inside `GAHFrontend` before `go build` so the built UI is embedded into the binary. The tracked `GAHFrontend/public/.gitkeep` keeps `go build` working even when the frontend has not been built yet (every build copies it into `GAHFrontend/dist`), in which case the server only answers with a "frontend is not embedded" hint.
 
 **Examples**
 

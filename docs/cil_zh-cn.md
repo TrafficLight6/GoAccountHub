@@ -50,8 +50,11 @@ GoAccountHub start [选项]
    VITE_API_PROXY_TARGET=http://127.0.0.1:<port>
    ```
 3. 启动 API 服务。
+4. 在同一端口上托管编译进二进制的 Web 界面（`GAHFrontend/dist`），因此 `http://localhost:<port>` 即可打开管理前端。
 
 > ⚠️ 注意：启动服务前需要确保前端根目录存在 `.env` 文件，服务启动时会按配置覆写该文件。
+
+> ℹ️ 请在 `go build` 之前先在 `GAHFrontend` 下执行 `npm run build`，构建产物会被嵌入二进制。仓库中跟踪的 `GAHFrontend/public/.gitkeep` 保证了前端尚未构建时 `go build` 依然可用（每次构建都会把它复制进 `GAHFrontend/dist`），此时服务只会返回「前端未嵌入」的提示。
 
 **示例**
 

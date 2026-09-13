@@ -79,11 +79,9 @@ Go Account Hub（简称 GAH）是一个用 Go 语言编写的用户中心，可�
         ```bash
         gah start
         ```
-        现在你可以通过 `http://localhost:<your_port>` 访问 GAH API。它将返回：
-        ```json
-        {"code":200,"message":"Welcome to GoAccountHub"}
-        ```
-    + 🎨 前端服务
+        现在你可以通过 `http://localhost:<your_port>` 访问 GAH API。前端已嵌入二进制并在同一端口托管，因此管理页面同样位于 `http://localhost:<your_port>`。  
+        注意：请在 `go build` 之前先在 `./GoAccountHub/GAHFrontend` 下执行 `npm run build`，否则嵌入的只是占位文件。
+    + 🎨 前端服务（仅用于开发，支持热更新）
         1. 执行以下命令启动前端服务：
         ```bash
         npm run dev

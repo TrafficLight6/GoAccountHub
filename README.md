@@ -79,11 +79,9 @@ This project need a PostgreSQL database to store.
         ```bash
         gah start
         ```
-        Now you can access the GAH api in `http://localhost:<your_port>`.It will return:
-        ```json
-        {"code":200,"message":"Welcome to GoAccountHub"}
-        ```
-    + 🎨 Frontend Server
+        Now you can access the GAH api in `http://localhost:<your_port>`.The frontend is embedded in the binary and served on the same port,so the management page is also in `http://localhost:<your_port>`.  
+        Remember to run `npm run build` in `./GoAccountHub/GAHFrontend` BEFORE `go build`,otherwise only a placeholder is embedded.
+    + 🎨 Frontend Server(Only for development,with hot reload)
         1. Type this command to start the frontend server:  
         ```bash
         npm run dev
