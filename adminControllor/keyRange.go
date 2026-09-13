@@ -68,7 +68,19 @@ func KeyRange(c *gin.Context) {
 	} else {
 		query.Limit(body.Length).Offset((body.BeginTableId - 1) * body.Length).Find(&keys)
 	}
+	//Mask the middle of each key before sending it to the frontend
+	for i := range keys {
+		keys[i].Key = maskKey(keys[i].Key)
+	}
 	//Return Result
 	c.JSON(http.StatusOK, gin.H{"code": http.StatusOK, "message": "Success", "data": keys})
 	return
+}
+
+// maskKey keeps the first and last 5 characters, and replaces the middle with 8 asterisks
+func maskKey(key string) string {
+	if len(key) <= 10 {
+		return "********"
+	}
+	return key[:5] + "********" + key[len(key)-5:]
 }

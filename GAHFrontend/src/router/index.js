@@ -5,7 +5,7 @@ import Home from '../components/main/page/home.vue'
 import Admin from '../components/main/page/admin.vue'
 import User from '../components/main/page/user.vue'
 import Character from '../components/main/page/character.vue'
-import ComponentTest from '../components/component_test.vue'
+import ComponentTest from '../components/ComponentTest.vue'
 
 const routes = [
   {
@@ -16,7 +16,7 @@ const routes = [
   {
     path: '/component',
     name: 'ComponentTest',
-    component: () => import('../components/component_test.vue'),
+    component: ComponentTest,
   },
   {
     path: '/main',
