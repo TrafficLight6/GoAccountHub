@@ -2,16 +2,17 @@ package server
 
 import (
 	"fmt"
+	"io/fs"
 
 	"github.com/TrafficLight6/GoAccountHub/config"
 	"github.com/TrafficLight6/GoAccountHub/router"
 )
 
-func StartServer(config config.Config) error {
+func StartServer(config config.Config, frontendFS fs.FS) error {
 	if config.Port == "" {
 		return fmt.Errorf("Port is empty")
 	}
-	router, db := router.ReturnRouter(config)
+	router, db := router.ReturnRouter(config, frontendFS)
 	if router == nil || db == nil {
 		return fmt.Errorf("Router or DB is nil")
 	}

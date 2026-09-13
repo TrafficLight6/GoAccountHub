@@ -10,6 +10,7 @@ REST API for **GoAccountHub (GAH)** — a user hub written in Go that stores use
 - **API version prefix:** `/api/v1`
 - **Content type:** `application/json` (request bodies are JSON, including `DELETE` / `PUT`)
 - **Auth model:** cookie based (`admin_token` for admins, `app_key` for third-party apps) + a login `token` returned by login for app users
+- **Web UI:** the same server also serves the management page embedded in the binary, so `http://<host>:<port>/` opens the frontend
 
 ## 📑 Table of Contents
 
@@ -19,6 +20,9 @@ REST API for **GoAccountHub (GAH)** — a user hub written in Go that stores use
 - [Quick Reference](#-quick-reference)
 - [🌐 Root](#-root)
 - [🛡️ Admin API](#️-admin-api)
+- [🧑 User Management](#-user-management)
+- [🎭 Character Management](#-character-management)
+- [🔑 Key Management](#-key-management)
 - [📱 App API](#-app-api)
 
 ## 🧭 Conventions
@@ -29,7 +33,8 @@ REST API for **GoAccountHub (GAH)** — a user hub written in Go that stores use
 | Error | Non-2xx status with `{"code": <status>, "error": "<reason>"}` (some endpoints use `"message"` instead of `"error"`) |
 | Booleans | Empty / `false` search fields are ignored |
 | Pagination | `begin_table_id` starts at **1**; `length = -1` means **return all**; `offset = (begin_table_id - 1) * length` |
-| Object fields | `User` / `Character` / `Admin` objects are serialized with **PascalCase** keys (e.g. `Username`, `UUHash`, `MetaData`); `Permission` uses **snake_case** (e.g. `can_add_admin`) |
+| Object fields | `User` / `Character` / `Admin` / `ApplicationKey` objects are serialized with **PascalCase** keys (e.g. `Username`, `UUHash`, `KeyUser`); `Permission` uses **snake_case** (e.g. `can_add_admin`) |
+| Web UI | Any path that is not an API route is served by the embedded frontend (`index.html` fallback); unknown `/api/*` paths return JSON `404` instead of the SPA |
 
 ## 🍪 Cookie & Auth Model
 
@@ -37,7 +42,7 @@ REST API for **GoAccountHub (GAH)** — a user hub written in Go that stores use
 | --- | --- | --- | --- |
 | `admin_token` | `POST /api/v1/admin/login` | All `/api/v1/*` admin endpoints | Admin session token |
 | `admin_name` | `POST /api/v1/admin/login` | Frontend display only | Current admin username |
-| `app_key` | External (issued out-of-band) | All `/api/v1/app/*` endpoints **except** the two `metadata` endpoints | Third-party application key |
+| `app_key` | Created with `POST /api/v1/key/add` | All `/api/v1/app/*` endpoints **except** the two `metadata` endpoints | Third-party application key |
 
 > `is_remember = true` → cookie/session lasts **30 days**; otherwise **1 hour** (session cookie for the admin token).
 
@@ -123,16 +128,12 @@ Normal admins carry a `permission` object:
 
 ### `GET` `/`
 
-Health / welcome check.
+Serves the web UI embedded in the binary. Every path that is not an API route falls back to `index.html`, so client side routes such as `/main/key` can be opened or refreshed directly.
 
 - 🍪 **Cookie required:** No
 - 🔑 **Permission required:** —
 
-**Response**
-
-```json
-{ "code": 200, "message": "Welcome to GoAccountHub" }
-```
+> If the server was compiled without the frontend (no `GAHFrontend/dist/index.html`), unknown paths return `404` with a hint to run `npm run build` in `GAHFrontend`.
 
 ---
 
@@ -376,6 +377,7 @@ Fetch a single admin by `uu_hash`.
 ```
 
 **Response (root admin)** — `{ "code": 200, "admin": null, "is_root": true }`
+
 Not found → `404`.
 
 #### `POST` `/api/v1/admin/range`

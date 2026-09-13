@@ -1,5 +1,5 @@
-# 🚀 GoAccountHub API 参考
-**__由 AI 生成，如有错误，请在 issue 中反馈。__**
+# 🚀 GoAccountHub API 文档
+**__由 AI 生成，如有错误请在 issue 中反馈。__**
 
 ## 🌐Language
 [English](api.md) | [简体中文](api_zh-cn.md)
@@ -8,42 +8,47 @@
 
 - **基础 URL：** `http://<host>:<port>`
 - **API 版本前缀：** `/api/v1`
-- **内容类型：** `application/json`（请求体均为 JSON，包括 `DELETE` / `PUT`）
-- **鉴权模型：** 基于 Cookie（管理员使用 `admin_token`，第三方应用使用 `app_key`）+ 应用用户登录后返回的 `token`
+- **内容类型：** `application/json`（请求体为 JSON，`DELETE` / `PUT` 也一样）
+- **鉴权模型：** 基于 Cookie（管理员用 `admin_token`，第三方应用用 `app_key`），以及登录接口返回给应用用户的 `token`
+- **Web 界面：** 同一个服务还托管编译进二进制的前端，因此访问 `http://<host>:<port>/` 即可打开管理页面
 
 ## 📑 目录
 
-- [约定](#-约定)
+- [通用约定](#-通用约定)
 - [Cookie 与鉴权模型](#-cookie-与鉴权模型)
 - [权限模型](#-权限模型)
-- [快速参考](#-快速参考)
+- [快速索引](#-快速索引)
 - [🌐 根路由](#-根路由)
 - [🛡️ 管理员 API](#️-管理员-api)
+- [🧑 用户管理](#-用户管理)
+- [🎭 角色管理](#-角色管理)
+- [🔑 密钥管理](#-密钥管理)
 - [📱 应用 API](#-应用-api)
 
-## 🧭 约定
+## 🧭 通用约定
 
 | 主题 | 规则 |
 | --- | --- |
-| 成功 | HTTP `200`，响应体为 `{"code": 200, ...}` |
-| 错误 | 非 2xx 状态码，响应体为 `{"code": <status>, "error": "<reason>"}`（部分端点使用 `"message"` 而非 `"error"`） |
-| 布尔条件 | 搜索条件中为空 / `false` 的字段会被忽略 |
+| 成功 | HTTP `200`，返回 `{"code": 200, ...}` |
+| 失败 | 非 2xx 状态码，返回 `{"code": <状态码>, "error": "<原因>"}`（部分接口用 `"message"` 代替 `"error"`） |
+| 布尔条件 | 搜索条件中为空或 `false` 的字段会被忽略 |
 | 分页 | `begin_table_id` 从 **1** 开始；`length = -1` 表示**返回全部**；`offset = (begin_table_id - 1) * length` |
-| 对象字段 | `User` / `Character` / `Admin` 对象序列化时使用 **PascalCase** 键名（如 `Username`、`UUHash`、`MetaData`）；`Permission` 使用 **snake_case**（如 `can_add_admin`） |
+| 对象字段 | `User` / `Character` / `Admin` / `ApplicationKey` 对象使用 **PascalCase** 字段名（如 `Username`、`UUHash`、`KeyUser`）；`Permission` 使用 **snake_case**（如 `can_add_admin`） |
+| Web 界面 | 所有非 API 路由的路径都由内嵌前端处理（回退到 `index.html`）；未匹配的 `/api/*` 路径返回 JSON `404`，而不是前端页面 |
 
 ## 🍪 Cookie 与鉴权模型
 
-| Cookie | 设置方 | 使用者 | 含义 |
+| Cookie | 由谁设置 | 使用方 | 含义 |
 | --- | --- | --- | --- |
-| `admin_token` | `POST /api/v1/admin/login` | 所有 `/api/v1/*` 管理员端点 | 管理员会话令牌 |
+| `admin_token` | `POST /api/v1/admin/login` | 所有 `/api/v1/*` 管理端接口 | 管理员会话令牌 |
 | `admin_name` | `POST /api/v1/admin/login` | 仅前端展示 | 当前管理员用户名 |
-| `app_key` | 外部（线下发放） | 所有 `/api/v1/app/*` 端点，**两个 `metadata` 端点除外** | 第三方应用密钥 |
+| `app_key` | 通过 `POST /api/v1/key/add` 创建 | 除两个 `metadata` 接口外的所有 `/api/v1/app/*` 接口 | 第三方应用密钥 |
 
-> `is_remember = true` → Cookie / 会话有效期 **30 天**；否则为 **1 小时**（管理员令牌为会话 Cookie）。
+> `is_remember = true` 时会话有效期 **30 天**，否则为 **1 小时**（管理员令牌为会话 Cookie）。
 
 ## 🔑 权限模型
 
-普通管理员携带一个 `permission` 对象：
+普通管理员带有一个 `permission` 对象：
 
 ```json
 {
@@ -57,21 +62,21 @@
 }
 ```
 
-- 内置的 `root` 管理员存储于配置文件中（而非数据库），**绕过所有权限检查**。
-- 权限字段缺失或为 `false` → HTTP `403` `Permission Denied`。
-- `admin_token` 无效 / 过期 → HTTP `401`。
+- 内置的 `root` 管理员保存在配置文件中（不在数据库里），**绕过所有权限校验**。
+- 权限缺失或为 `false` → HTTP `403` `Permission Denied`。
+- `admin_token` 无效或过期 → HTTP `401`。
 
-| 权限 | 可访问的端点 |
+| 权限 | 可访问 |
 | --- | --- |
 | `can_get_admin` | `POST /admin/count`、`POST /admin/get`、`POST /admin/range` |
 | `can_add_admin` | `POST /admin/add` |
 | `can_delete_admin` | `DELETE /admin/delete` |
 | `can_edit_admin` | `PUT /admin/edit` |
-| `can_operate_user` | 所有 `/api/v1/user/*` 管理员端点 |
-| `can_operate_character` | 所有 `/api/v1/character/*` 管理员端点 |
-| `can_operate_app_key` | 所有 `/api/v1/key/*` 管理员端点 |
+| `can_operate_user` | 全部 `/api/v1/user/*` 管理端接口 |
+| `can_operate_character` | 全部 `/api/v1/character/*` 管理端接口 |
+| `can_operate_app_key` | 全部 `/api/v1/key/*` 管理端接口 |
 
-## 📋 快速参考
+## 📋 快速索引
 
 | 方法 | 路径 | 🍪 Cookie | 🔑 权限 |
 | --- | --- | --- | --- |
@@ -123,16 +128,12 @@
 
 ### `GET` `/`
 
-健康检查 / 欢迎检查。
+返回编译进二进制的 Web 界面。所有非 API 路由的路径都会回退到 `index.html`，因此像 `/main/key` 这样的前端路由可以直接打开或刷新。
 
 - 🍪 **是否需要 Cookie：** 否
 - 🔑 **所需权限：** —
 
-**响应**
-
-```json
-{ "code": 200, "message": "Welcome to GoAccountHub" }
-```
+> 如果编译时没有嵌入前端（不存在 `GAHFrontend/dist/index.html`），未匹配的路径会返回 `404`，并提示在 `GAHFrontend` 下执行 `npm run build`。
 
 ---
 
@@ -154,8 +155,8 @@
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `username` | string | ✅ | 管理员用户名（root 管理员为 `root`） |
-| `password` | string | ✅ | 明文密码（服务端使用 SHA-256 哈希） |
-| `is_remember` | bool | ❌ | `true` = 30 天会话，`false` / 省略 = 1 小时会话 |
+| `password` | string | ✅ | 明文密码（服务端用 SHA-256 哈希） |
+| `is_remember` | bool | ❌ | `true` = 30 天会话，`false`/不传 = 1 小时会话 |
 
 ```json
 { "username": "root", "password": "secret", "is_remember": true }
@@ -167,7 +168,7 @@
 { "code": 200, "message": "login success", "token": "<token>", "admin": "root" }
 ```
 
-> 凭据无效 → `400` `{"code":400,"message":"invalid credentials"}`。
+> 凭据错误 → `400` `{"code":400,"message":"invalid credentials"}`。
 
 #### `DELETE` `/api/v1/admin/logout`
 
@@ -186,7 +187,7 @@
 
 #### `POST` `/api/v1/info`
 
-任何已登录管理员均可查看的仪表盘统计数据。
+仪表盘统计信息，任意已登录管理员均可访问。
 
 - 🍪 **是否需要 Cookie：** 是 —— `admin_token`
 - 🔑 **所需权限：** —
@@ -210,11 +211,11 @@
 }
 ```
 
-> 若已配置，`admin_count` 会包含 root 管理员。
+> 配置了 root 管理员时，`admin_count` 会把它计入。
 
 #### `POST` `/api/v1/admin/check_token`
 
-校验当前 `admin_token`。
+校验当前 `admin_token` 是否有效。
 
 - 🍪 **是否需要 Cookie：** 是 —— `admin_token`
 - 🔑 **所需权限：** —
@@ -227,7 +228,7 @@
 { "code": 200, "message": "admin_token valid" }
 ```
 
-> 令牌缺失 / 无效 → `400`。
+> 令牌缺失或无效 → `400`。
 
 #### `POST` `/api/v1/admin/info`
 
@@ -269,7 +270,7 @@
 
 #### `POST` `/api/v1/admin/add`
 
-创建一个新的（非 root）管理员。
+新增一个（非 root 的）管理员。
 
 - 🍪 **是否需要 Cookie：** 是 —— `admin_token`
 - 🔑 **所需权限：** `can_add_admin`
@@ -278,9 +279,9 @@
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `username` | string | ✅ | 不能为 `root`，且必须唯一 |
+| `username` | string | ✅ | 不能是 `root`，且必须唯一 |
 | `password` | string | ✅ | 明文密码 |
-| `permission` | object | ✅ | 权限映射（见[权限模型](#-权限模型)） |
+| `permission` | object | ✅ | 权限对象（见[权限模型](#-权限模型)） |
 
 ```json
 {
@@ -296,11 +297,11 @@
 { "code": 200, "message": "Admin Added", "admin": { "ID": 2, "Username": "alice", "UUHash": "<uu_hash>", "Permission": { } } }
 ```
 
-> 用户名为 `root` 会被拒绝；用户名重复或用户名 / 密码为空 → `400`。
+> 用户名为 `root` 会被拒绝；用户名重复或用户名/密码为空 → `400`。
 
 #### `DELETE` `/api/v1/admin/delete`
 
-根据 `uu_hash` 删除管理员。
+按 `uu_hash` 删除管理员。
 
 - 🍪 **是否需要 Cookie：** 是 —— `admin_token`
 - 🔑 **所需权限：** `can_delete_admin`
@@ -321,11 +322,11 @@
 { "code": 200, "message": "Delete Admin Success" }
 ```
 
-> root 管理员不可删除，管理员也不能删除自己 → `400`。
+> 不能删除 root 管理员，管理员也不能删除自己 → `400`。
 
 #### `PUT` `/api/v1/admin/edit`
 
-修改管理员的密码和 / 或权限。
+修改管理员的密码和/或权限。
 
 - 🍪 **是否需要 Cookie：** 是 —— `admin_token`
 - 🔑 **所需权限：** `can_edit_admin`
@@ -335,8 +336,8 @@
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `uu_hash` | string | ✅ | 目标管理员的 `uu_hash` |
-| `admin_info.password` | string | ❌ | 新密码；为空表示保持不变 |
-| `admin_info.permission` | object | ❌ | 新的权限映射 |
+| `admin_info.password` | string | ❌ | 新密码；留空表示不修改 |
+| `admin_info.permission` | object | ❌ | 新的权限对象 |
 
 ```json
 {
@@ -354,11 +355,11 @@
 { "code": 200, "message": "Success" }
 ```
 
-> root 管理员不可修改，管理员也不能修改自己 → `400`。
+> 不能修改 root 管理员，管理员也不能修改自己 → `400`。
 
 #### `POST` `/api/v1/admin/get`
 
-根据 `uu_hash` 获取单个管理员。
+按 `uu_hash` 查询单个管理员。
 
 - 🍪 **是否需要 Cookie：** 是 —— `admin_token`
 - 🔑 **所需权限：** `can_get_admin`
@@ -376,11 +377,12 @@
 ```
 
 **响应（root 管理员）** —— `{ "code": 200, "admin": null, "is_root": true }`
+
 未找到 → `404`。
 
 #### `POST` `/api/v1/admin/range`
 
-分页 / 过滤的管理员列表。**不包含 root 管理员。**
+分页 / 过滤查询管理员列表。**不包含 root 管理员。**
 
 - 🍪 **是否需要 Cookie：** 是 —— `admin_token`
 - 🔑 **所需权限：** `can_get_admin`
@@ -389,9 +391,9 @@
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `begin_table_id` | int | ✅ | 页码，从 `1` 开始（必须 `>= 0`） |
-| `length` | int | ✅ | 每页数量；`-1` 表示返回全部（必须 `>= -1`） |
-| `search_condition` | object | ❌ | 过滤条件（见下，空字段忽略，使用 `AND` 组合） |
+| `begin_table_id` | int | ✅ | 页码，从 `1` 开始（需 `>= 0`） |
+| `length` | int | ✅ | 每页条数；`-1` 表示返回全部（需 `>= -1`） |
+| `search_condition` | object | ❌ | 下方筛选条件（空字段忽略，多个条件以 `AND` 组合） |
 
 **`search_condition`**
 
@@ -399,7 +401,7 @@
 | --- | --- | --- |
 | `username` | string | 模糊匹配（`LIKE %value%`） |
 | `uu_hash` | string | 模糊匹配（`LIKE %value%`） |
-| `can_add_admin` | bool | 为 `true` 时仅返回**拥有**该权限的管理员 |
+| `can_add_admin` | bool | 为 `true` 时只返回**拥有**该权限的管理员 |
 | `can_delete_admin` | bool | 同上 |
 | `can_edit_admin` | bool | 同上 |
 | `can_get_admin` | bool | 同上 |
@@ -435,7 +437,7 @@
 
 #### `POST` `/api/v1/user/add`
 
-创建用户。会自动创建一个**同名角色**。
+新增用户，同时会**自动创建一个同名角色**。
 
 - 🍪 **是否需要 Cookie：** 是 —— `admin_token`
 - 🔑 **所需权限：** `can_operate_user`
@@ -444,7 +446,7 @@
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `username` | string | ✅ | 唯一 |
+| `username` | string | ✅ | 必须唯一 |
 | `password` | string | ✅ | 明文密码 |
 | `meta_data` | string | ❌ | 任意元数据（JSON / XML / YAML / 纯文本） |
 
@@ -456,7 +458,7 @@
 
 #### `DELETE` `/api/v1/user/delete`
 
-删除用户**及其所属的所有角色**。
+删除用户**及其名下所有角色**。
 
 - 🍪 **是否需要 Cookie：** 是 —— `admin_token`
 - 🔑 **所需权限：** `can_operate_user`
@@ -475,7 +477,7 @@
 
 #### `PUT` `/api/v1/user/edit`
 
-修改用户。字段为空时保持原值。
+修改用户，空字段保持原值。
 
 - 🍪 **是否需要 Cookie：** 是 —— `admin_token`
 - 🔑 **所需权限：** `can_operate_user`
@@ -485,9 +487,9 @@
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `uu_hash` | string | ✅ | 目标用户的 `uu_hash` |
-| `username` | string | ❌ | 新用户名（会同时重命名同名角色） |
+| `username` | string | ❌ | 新用户名（同名角色也会一起改名） |
 | `password` | string | ❌ | 新密码 |
-| `meta_data` | string | ❌ | 新元数据 |
+| `meta_data` | string | ❌ | 新的元数据 |
 
 **响应**
 
@@ -497,7 +499,7 @@
 
 #### `POST` `/api/v1/user/get`
 
-获取单个用户及其拥有的角色数量。
+查询单个用户，并附带其拥有的角色数量。
 
 - 🍪 **是否需要 Cookie：** 是 —— `admin_token`
 - 🔑 **所需权限：** `can_operate_user`
@@ -516,7 +518,7 @@
 
 #### `POST` `/api/v1/user/range`
 
-分页 / 过滤的用户列表。
+分页 / 过滤查询用户列表。
 
 - 🍪 **是否需要 Cookie：** 是 —— `admin_token`
 - 🔑 **所需权限：** `can_operate_user`
@@ -526,8 +528,8 @@
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `begin_table_id` | int | ✅ | 页码，从 `1` 开始 |
-| `length` | int | ✅ | 每页数量；`-1` 表示返回全部 |
-| `search_condition` | object | ❌ | 过滤条件（见下） |
+| `length` | int | ✅ | 每页条数；`-1` 表示返回全部 |
+| `search_condition` | object | ❌ | 下方筛选条件 |
 
 **`search_condition`**
 
@@ -544,7 +546,7 @@
 
 ### 🎭 角色管理
 
-> ⚠️ 当配置开关 **`allow_multi_character`** 为 `true` 时，这些端点（以及下文整个 `/api/v1/app/*` 分组）才可访问。否则 → `403` `Server Not Allow Multi Character`。
+> ⚠️ 仅当配置开关 **`allow_multi_character`** 为 `true` 时，这些接口（以及下方整个 `/api/v1/app/*` 分组）才可访问，否则 → `403` `Server Not Allow Multi Character`。
 
 #### `POST` `/api/v1/character/count`
 
@@ -595,7 +597,7 @@
 { "code": 200, "message": "Character Deleted" }
 ```
 
-> 同名角色（`character_uu_hash == user_uu_hash`）不能在此删除；请改为删除该用户。
+> 同名角色（`character_uu_hash == user_uu_hash`）不能在这里删除，请改为删除用户。
 
 #### `PUT` `/api/v1/character/edit`
 
@@ -610,7 +612,7 @@
 | `character_uu_hash` | string | ✅ | 目标角色的 `uu_hash` |
 | `character_name` | string | ❌ | 新名称（不能冲突） |
 | `password` | string | ❌ | 新密码 |
-| `meta_data` | string | ❌ | 新元数据 |
+| `meta_data` | string | ❌ | 新的元数据 |
 
 **响应**
 
@@ -618,7 +620,7 @@
 { "code": 200, "message": "Edit Character Success" }
 ```
 
-> 同名角色必须通过用户相关端点进行修改。
+> 同名角色需要通过用户相关接口修改。
 
 #### `POST` `/api/v1/character/get`
 
@@ -640,7 +642,7 @@
 
 #### `POST` `/api/v1/character/range`
 
-分页 / 过滤的角色列表。
+分页 / 过滤查询角色列表。
 
 - 🍪 **是否需要 Cookie：** 是 —— `admin_token`
 - 🔑 **所需权限：** `can_operate_character`
@@ -650,8 +652,8 @@
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `begin_table_id` | int | ✅ | 页码，从 `1` 开始 |
-| `length` | int | ✅ | 每页数量；`-1` 表示返回全部 |
-| `search_condition` | object | ❌ | 过滤条件（见下） |
+| `length` | int | ✅ | 每页条数；`-1` 表示返回全部 |
+| `search_condition` | object | ❌ | 下方筛选条件 |
 
 **`search_condition`**
 
@@ -709,8 +711,8 @@
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `begin_table_id` | int | ✅ | 页码，从 `1` 开始 |
-| `length` | int | ✅ | 每页数量；`-1` 表示返回全部 |
-| `search_condition` | object | ❌ | 过滤条件（见下） |
+| `length` | int | ✅ | 每页条数；`-1` 表示返回全部 |
+| `search_condition` | object | ❌ | 下方筛选条件 |
 
 **`search_condition`**
 
@@ -732,11 +734,11 @@
 { "code": 200, "message": "Success", "data": [ { "ID": 1, "KeyUser": "my_site", "Key": "abcde********klmno" } ] }
 ```
 
-> 🔒 `Key` 已打码：保留前 5 位和后 5 位，中间用 8 个 `*` 替换，因此不会返回完整 key。
+> 🔒 返回的 `Key` 已打码：保留前 5 位和后 5 位，中间用 8 个 `*` 替换，不会返回完整 key。
 
 #### `DELETE` `/api/v1/key/delete`
 
-根据 `key_user_name` 删除应用密钥。
+按 `key_user_name` 删除应用密钥。
 
 - 🍪 **是否需要 Cookie：** 是 —— `admin_token`
 - 🔑 **所需权限：** `can_operate_app_key`
@@ -763,15 +765,15 @@
 
 ## 📱 应用 API
 
-位于 `/api/v1/app` 下的第三方应用 API。所有端点都要求 **`app_key`** Cookie —— 两个 `metadata` 端点除外，它们使用请求体中的登录 `token` 进行鉴权。
+`/api/v1/app` 下的第三方应用 API。除两个 `metadata` 接口使用请求体中的登录 `token` 鉴权外，其余接口都需要 **`app_key`** Cookie。
 
-> ⚠️ 由于分组中间件继承机制，**所有** `/api/v1/app/*` 端点也会受 **`allow_multi_character`** 开关限制（包括用户相关端点）。
+> ⚠️ 由于分组中间件继承，**所有** `/api/v1/app/*` 接口都会受到 **`allow_multi_character`** 开关限制（包括用户相关接口）。
 
 ### 🔐 鉴权
 
 #### `POST` `/api/v1/app/user/login`
 
-以指定角色登录用户。返回 `token`（用于应用用户自身的操作以及 metadata 端点）。
+以指定角色登录用户，返回 `token`（用于应用用户自身操作以及 metadata 接口）。
 
 - 🍪 **是否需要 Cookie：** 是 —— `app_key`
 - 🔑 **所需权限：** —
@@ -781,7 +783,7 @@
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
 | `username` | string | ✅ | 用户名 |
-| `character_name` | string | ✅ | 属于该用户的角色 |
+| `character_name` | string | ✅ | 属于该用户的角色名 |
 | `password` | string | ✅ | 用户密码（明文） |
 | `is_remember` | bool | ❌ | `true` = 30 天令牌，否则 1 小时 |
 
@@ -816,9 +818,9 @@
 { "code": 200, "message": "Logout success" }
 ```
 
-### 🧑 用户端点（应用）
+### 🧑 用户接口（应用）
 
-与对应的管理员端点使用相同的处理函数，但改用 `app_key` 校验，而非 `admin_token` + 权限。
+处理逻辑与管理端完全一致，只是把 `admin_token` + 权限换成了 `app_key` 校验。
 
 | 方法 | 路径 | 🍪 Cookie | 请求体 |
 | --- | --- | --- | --- |
@@ -828,7 +830,7 @@
 | `POST` | `/api/v1/app/user/get` | `app_key` | `uu_hash` |
 | `POST` | `/api/v1/app/user/range` | `app_key` | `begin_table_id`、`length`、`search_condition{ username, uu_hash }` |
 
-### 🎭 角色端点（应用）
+### 🎭 角色接口（应用）
 
 | 方法 | 路径 | 🍪 Cookie | 请求体 |
 | --- | --- | --- | --- |
@@ -838,13 +840,13 @@
 | `POST` | `/api/v1/app/character/get` | `app_key` | `user_uu_hash`、`character_uu_hash` |
 | `POST` | `/api/v1/app/character/range` | `app_key` | `begin_table_id`、`length`、`search_condition{ character_name, user_uu_hash, uu_hash }` |
 
-### 📦 Metadata 端点
+### 📦 元数据接口
 
-> 🍪 这两个端点**不**要求 `app_key`；它们使用请求体中的应用用户 `token` 进行鉴权。
+> 🍪 这两个接口**不需要** `app_key`，而是用请求体中的应用用户 `token` 鉴权。
 
 #### `POST` `/api/v1/app/user/get/metadata`
 
-返回 token 所属用户的元数据。
+返回拥有该令牌的用户的元数据。
 
 - 🍪 **是否需要 Cookie：** 否
 - 🔑 **所需权限：** —
@@ -863,7 +865,7 @@
 
 #### `POST` `/api/v1/app/character/get/metadata`
 
-返回 token 所属角色的元数据。
+返回拥有该令牌的角色的元数据。
 
 - 🍪 **是否需要 Cookie：** 否
 - 🔑 **所需权限：** —

@@ -1,0 +1,6 @@
+# Shell scripts must keep LF so they stay runnable on Linux/macOS and Git Bash
+*.sh text eol=lf
+
+# Windows batch scripts are expected to use CRLF
+*.cmd text eol=crlf
+*.bat text eol=crlf

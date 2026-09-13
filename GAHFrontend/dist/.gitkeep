@@ -1,0 +1,4 @@
+# Placeholder for //go:embed (see frontend.go).
+# The copy under GAHFrontend/public is copied into GAHFrontend/dist by every
+# `npm run build`, because Vite empties dist on each build.
+# Run `npm run build` inside GAHFrontend to embed the real frontend.
